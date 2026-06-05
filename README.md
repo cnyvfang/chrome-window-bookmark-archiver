@@ -105,5 +105,3 @@ rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude
 COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.3.4.zip
 rm -rf "$staging"
 ```
-
-When packaging for this repository, include the local install ZIP only. Do not commit the Chrome Web Store upload ZIP.
