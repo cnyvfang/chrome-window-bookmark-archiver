@@ -1,0 +1,10 @@
+.DS_Store
+__MACOSX/
+._*
+.learnings/
+
+# Keep the local install ZIP, but ignore alternate release artifacts.
+*webstore*.zip
+*preview*.png
+*.crx
+*.pem

@@ -1,0 +1,203 @@
+{
+  "extensionName": {
+    "message": "窗口页面归档收藏",
+    "description": "扩展名称"
+  },
+  "extensionDescription": {
+    "message": "一键将当前 Chrome 窗口打开的所有页面按网站分类收藏，并可选择备份后关闭原标签页。",
+    "description": "扩展描述"
+  },
+  "actionTitle": {
+    "message": "打开窗口页面归档收藏",
+    "description": "扩展按钮标题"
+  },
+  "topFolderPrefix": {
+    "message": "窗口页面归档",
+    "description": "新建总书签文件夹前缀"
+  },
+  "archiveInProgressTitle": {
+    "message": "正在归档当前窗口页面...",
+    "description": "归档中状态提示"
+  },
+  "archiveFailedTitle": {
+    "message": "归档失败：请打开扩展的背景页控制台查看错误。",
+    "description": "归档失败提示"
+  },
+  "emptyWindowTitle": {
+    "message": "当前窗口没有可收藏的页面。",
+    "description": "没有可收藏页面时的提示"
+  },
+  "savedTitle": {
+    "message": "已收藏 $COUNT$ 个页面。",
+    "description": "归档成功提示",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "savedWithSkippedTitle": {
+    "message": "已收藏 $COUNT$ 个页面，跳过 $SKIPPED$ 个页面。",
+    "description": "归档部分成功提示",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
+  "skippedBookmarkWarning": {
+    "message": "无法收藏页面：$URL$",
+    "description": "后台控制台跳过页面警告",
+    "placeholders": {
+      "url": {
+        "content": "$1"
+      }
+    }
+  },
+  "localFilesFolder": {
+    "message": "本地文件",
+    "description": "file: 页面分类文件夹"
+  },
+  "otherFolder": {
+    "message": "其他",
+    "description": "兜底分类文件夹"
+  },
+  "errorBadge": {
+    "message": "失败",
+    "description": "失败状态角标"
+  },
+  "emptyBadge": {
+    "message": "空",
+    "description": "空窗口状态角标"
+  },
+  "savedAndClosedTitle": {
+    "message": "已收藏 $COUNT$ 个页面，已关闭 $CLOSED$ 个标签页。",
+    "description": "归档成功并关闭标签页提示",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "savedWithSkippedAndClosedTitle": {
+    "message": "已收藏 $COUNT$ 个页面，跳过 $SKIPPED$ 个页面，已关闭 $CLOSED$ 个标签页。",
+    "description": "归档部分成功并关闭标签页提示",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
+  },
+  "popupTitle": {
+    "message": "窗口页面归档收藏",
+    "description": "弹窗标题"
+  },
+  "popupSubtitle": {
+    "message": "归档当前窗口",
+    "description": "弹窗副标题"
+  },
+  "lastBackupLabel": {
+    "message": "上一次备份",
+    "description": "最近备份时间标签"
+  },
+  "lastBackupNever": {
+    "message": "暂无记录",
+    "description": "没有备份记录时显示"
+  },
+  "backupOnlyButton": {
+    "message": "只进行收藏备份",
+    "description": "只备份按钮"
+  },
+  "backupOnlyHint": {
+    "message": "保存当前窗口标签页，保留所有标签页打开",
+    "description": "只备份按钮说明"
+  },
+  "backupCloseButton": {
+    "message": "备份并关闭标签页",
+    "description": "备份并关闭按钮"
+  },
+  "backupCloseHint": {
+    "message": "先打开一个新标签页，再关闭当前窗口原有标签页",
+    "description": "备份并关闭按钮说明"
+  },
+  "statusReady": {
+    "message": "请选择一个操作。",
+    "description": "弹窗初始状态"
+  },
+  "statusArchiving": {
+    "message": "正在备份...",
+    "description": "弹窗备份中状态"
+  },
+  "statusFailed": {
+    "message": "备份失败。",
+    "description": "弹窗失败状态"
+  },
+  "statusNoWindow": {
+    "message": "无法找到当前窗口。",
+    "description": "无法识别窗口状态"
+  },
+  "statusSaved": {
+    "message": "已收藏 $COUNT$ 个页面。",
+    "description": "弹窗备份成功状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusSavedAndClosed": {
+    "message": "已收藏 $COUNT$ 个页面，并关闭 $CLOSED$ 个标签页。",
+    "description": "弹窗备份并关闭成功状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusSavedWithSkipped": {
+    "message": "已收藏 $COUNT$ 个页面，跳过 $SKIPPED$ 个页面。",
+    "description": "弹窗部分备份成功状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusSavedWithSkippedAndClosed": {
+    "message": "已收藏 $COUNT$ 个页面，跳过 $SKIPPED$ 个页面，并关闭 $CLOSED$ 个标签页。",
+    "description": "弹窗部分备份成功并关闭状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
+  },
+  "statusNothingToBackup": {
+    "message": "当前窗口没有可备份页面。",
+    "description": "没有可备份页面状态"
+  }
+}

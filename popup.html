@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="popup.css">
+    <title data-i18n="popupTitle">Window Bookmark Archiver</title>
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="header">
+        <img class="logo" src="assets/icon-48.png" alt="">
+        <div>
+          <h1 data-i18n="popupTitle">Window Bookmark Archiver</h1>
+          <p data-i18n="popupSubtitle">Archive the current window</p>
+        </div>
+      </header>
+
+      <section class="last-backup" aria-live="polite">
+        <span class="label" data-i18n="lastBackupLabel">Last backup</span>
+        <strong id="lastBackupTime" data-i18n="lastBackupNever">Never</strong>
+      </section>
+
+      <section class="actions">
+        <button id="backupOnlyButton" class="action-button primary" type="button">
+          <span class="button-title" data-i18n="backupOnlyButton">Backup only</span>
+          <span class="button-hint" data-i18n="backupOnlyHint">Save tabs without closing them</span>
+        </button>
+        <button id="backupCloseButton" class="action-button danger" type="button">
+          <span class="button-title" data-i18n="backupCloseButton">Backup and close tabs</span>
+          <span class="button-hint" data-i18n="backupCloseHint">Open a new tab, then close current tabs</span>
+        </button>
+      </section>
+
+      <p id="status" class="status" role="status" aria-live="polite" data-i18n="statusReady">Choose an action.</p>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

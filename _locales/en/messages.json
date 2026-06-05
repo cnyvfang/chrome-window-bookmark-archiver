@@ -1,0 +1,203 @@
+{
+  "extensionName": {
+    "message": "Window Bookmark Archiver",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Save every tab in the current Chrome window into grouped bookmarks, with an option to close the original tabs after backup.",
+    "description": "Extension description"
+  },
+  "actionTitle": {
+    "message": "Open Window Bookmark Archiver",
+    "description": "Extension action title"
+  },
+  "topFolderPrefix": {
+    "message": "Window Bookmark Archive",
+    "description": "Top-level bookmark folder prefix"
+  },
+  "archiveInProgressTitle": {
+    "message": "Archiving tabs in the current window...",
+    "description": "In-progress status title"
+  },
+  "archiveFailedTitle": {
+    "message": "Archive failed. Open the extension background console for details.",
+    "description": "Failure status title"
+  },
+  "emptyWindowTitle": {
+    "message": "There are no bookmarkable pages in the current window.",
+    "description": "Empty-window status title"
+  },
+  "savedTitle": {
+    "message": "Saved $COUNT$ pages.",
+    "description": "Success status title",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "savedWithSkippedTitle": {
+    "message": "Saved $COUNT$ pages and skipped $SKIPPED$ pages.",
+    "description": "Partial success status title",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
+  "skippedBookmarkWarning": {
+    "message": "Could not bookmark page: $URL$",
+    "description": "Console warning for skipped pages",
+    "placeholders": {
+      "url": {
+        "content": "$1"
+      }
+    }
+  },
+  "localFilesFolder": {
+    "message": "Local files",
+    "description": "Folder name for file: pages"
+  },
+  "otherFolder": {
+    "message": "Other",
+    "description": "Fallback folder name"
+  },
+  "errorBadge": {
+    "message": "FAIL",
+    "description": "Failure badge text"
+  },
+  "emptyBadge": {
+    "message": "NONE",
+    "description": "Empty-window badge text"
+  },
+  "savedAndClosedTitle": {
+    "message": "Saved $COUNT$ pages and closed $CLOSED$ tabs.",
+    "description": "Success and close status title",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "savedWithSkippedAndClosedTitle": {
+    "message": "Saved $COUNT$ pages, skipped $SKIPPED$ pages, and closed $CLOSED$ tabs.",
+    "description": "Partial success and close status title",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
+  },
+  "popupTitle": {
+    "message": "Window Bookmark Archiver",
+    "description": "Popup title"
+  },
+  "popupSubtitle": {
+    "message": "Archive the current window",
+    "description": "Popup subtitle"
+  },
+  "lastBackupLabel": {
+    "message": "Last backup",
+    "description": "Last backup time label"
+  },
+  "lastBackupNever": {
+    "message": "Never",
+    "description": "Shown when no backup has been recorded"
+  },
+  "backupOnlyButton": {
+    "message": "Backup only",
+    "description": "Backup-only button"
+  },
+  "backupOnlyHint": {
+    "message": "Save current window tabs and keep them open",
+    "description": "Backup-only button hint"
+  },
+  "backupCloseButton": {
+    "message": "Backup and close tabs",
+    "description": "Backup-and-close button"
+  },
+  "backupCloseHint": {
+    "message": "Open a new tab, then close the original tabs in this window",
+    "description": "Backup-and-close button hint"
+  },
+  "statusReady": {
+    "message": "Choose an action.",
+    "description": "Initial popup status"
+  },
+  "statusArchiving": {
+    "message": "Archiving...",
+    "description": "In-progress popup status"
+  },
+  "statusFailed": {
+    "message": "Backup failed.",
+    "description": "Failure popup status"
+  },
+  "statusNoWindow": {
+    "message": "Could not find the current window.",
+    "description": "No current window status"
+  },
+  "statusSaved": {
+    "message": "Saved $COUNT$ pages.",
+    "description": "Popup success status",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusSavedAndClosed": {
+    "message": "Saved $COUNT$ pages and closed $CLOSED$ tabs.",
+    "description": "Popup success and close status",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusSavedWithSkipped": {
+    "message": "Saved $COUNT$ pages and skipped $SKIPPED$ pages.",
+    "description": "Popup partial success status",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusSavedWithSkippedAndClosed": {
+    "message": "Saved $COUNT$ pages, skipped $SKIPPED$ pages, and closed $CLOSED$ tabs.",
+    "description": "Popup partial success and close status",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
+  },
+  "statusNothingToBackup": {
+    "message": "There are no pages to back up in this window.",
+    "description": "No pages to back up status"
+  }
+}

@@ -1,0 +1,147 @@
+:root {
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  color: #111827;
+  background: #f8fafc;
+}
+
+.popup-shell {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.header p {
+  margin-top: 3px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.last-backup {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.label {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.last-backup strong {
+  min-height: 20px;
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+}
+
+.action-button {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+  min-height: 58px;
+  padding: 11px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.action-button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.action-button:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.primary {
+  color: #ffffff;
+  background: #2563eb;
+}
+
+.primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.danger {
+  color: #7f1d1d;
+  border-color: #fecaca;
+  background: #fff7ed;
+}
+
+.danger:hover:not(:disabled) {
+  border-color: #fca5a5;
+  background: #ffedd5;
+}
+
+.button-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.button-hint {
+  font-size: 12px;
+  line-height: 1.35;
+  opacity: 0.86;
+}
+
+.status {
+  min-height: 18px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.status.error {
+  color: #b3261e;
+}
+
+.status.success {
+  color: #137333;
+}
