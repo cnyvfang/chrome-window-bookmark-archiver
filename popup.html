@@ -32,6 +32,55 @@
         </button>
       </section>
 
+      <section class="settings-panel">
+        <div class="settings-header">
+          <div>
+            <h2 data-i18n="autoCleanupTitle">Automatic cleanup</h2>
+            <p data-i18n="autoCleanupSubtitle">Archive and close stale tabs on a schedule</p>
+          </div>
+          <label class="switch">
+            <input id="autoCleanupEnabled" type="checkbox">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="sr-only" data-i18n="autoCleanupToggleLabel">Enable automatic cleanup</span>
+          </label>
+        </div>
+
+        <div class="field-grid">
+          <label class="field">
+            <span data-i18n="autoCleanupThresholdLabel">Close tabs inactive for</span>
+            <select id="autoCleanupThreshold">
+              <option value="60" data-i18n="durationOneHour">1 hour</option>
+              <option value="360" data-i18n="durationSixHours">6 hours</option>
+              <option value="720" data-i18n="durationTwelveHours">12 hours</option>
+              <option value="1440" data-i18n="durationOneDay">1 day</option>
+              <option value="4320" data-i18n="durationThreeDays">3 days</option>
+              <option value="10080" data-i18n="durationSevenDays">7 days</option>
+              <option value="43200" data-i18n="durationThirtyDays">30 days</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span data-i18n="autoCleanupIntervalLabel">Check every</span>
+            <select id="autoCleanupInterval">
+              <option value="30" data-i18n="intervalThirtyMinutes">30 minutes</option>
+              <option value="60" data-i18n="intervalOneHour">1 hour</option>
+              <option value="360" data-i18n="intervalSixHours">6 hours</option>
+              <option value="720" data-i18n="intervalTwelveHours">12 hours</option>
+            </select>
+          </label>
+        </div>
+
+        <p class="settings-note" data-i18n="autoCleanupProtectionNote">Pinned, active, audible, incognito, and internal Chrome tabs are protected.</p>
+
+        <div class="last-backup compact" aria-live="polite">
+          <span class="label" data-i18n="lastAutoCleanupLabel">Last automatic cleanup</span>
+          <strong id="lastAutoCleanupTime" data-i18n="lastBackupNever">Never</strong>
+          <span id="lastAutoCleanupSummary" class="summary"></span>
+        </div>
+
+        <button id="runAutoCleanupButton" class="secondary-button" type="button" data-i18n="runAutoCleanupButton">Run cleanup now</button>
+      </section>
+
       <p id="status" class="status" role="status" aria-live="polite" data-i18n="statusReady">Choose an action.</p>
     </main>
 

@@ -5,26 +5,26 @@
 <h1 align="center">Window Bookmark Archiver</h1>
 
 <p align="center">
-  Archive every tab in the current Chrome window into organized bookmark folders.
+  Archive crowded Chrome windows into organized bookmark folders, then clean up stale tabs when you choose.
 </p>
 
 <p align="center">
   <a href="README.zh-CN.md">简体中文</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.3.4.zip">Download ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.4.0.zip">Download ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.3.4-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.4.0-111827">
 </p>
 
 ## What It Does
 
 Window Bookmark Archiver is a small Chrome extension for cleaning up crowded browser windows without losing context. Open the popup, choose a backup mode, and the extension saves the current window's tabs into a timestamped bookmark folder grouped by website.
 
-It is useful when you want to preserve a research session, reset a messy tab window, or keep project tabs grouped for later.
+It can also run scheduled cleanup for stale tabs. When enabled, it archives tabs that have not been accessed for your chosen amount of time, then closes only the tabs that were successfully saved.
 
 ## Features
 
@@ -33,12 +33,15 @@ It is useful when you want to preserve a research session, reset a messy tab win
 - Creates a new timestamped top-level bookmark folder for each backup.
 - Offers two modes: backup only, or backup and close original tabs after opening a new tab.
 - Shows the last successful backup time in the popup.
+- Optional scheduled cleanup for tabs that have not been accessed for 1 hour to 30 days.
+- Shows the last automatic cleanup time and result summary.
+- Protects pinned, active, audible, incognito, and internal Chrome tabs from automatic cleanup.
 - Supports English and Chinese UI text through Chrome i18n.
 - Runs locally with no server, no tracking, and no build step.
 
 ## Install Locally
 
-1. Download [chrome-window-bookmark-archiver-1.3.4.zip](chrome-window-bookmark-archiver-1.3.4.zip).
+1. Download [chrome-window-bookmark-archiver-1.4.0.zip](chrome-window-bookmark-archiver-1.4.0.zip).
 2. Unzip the file.
 3. Open Chrome and go to `chrome://extensions/`.
 4. Turn on **Developer mode**.
@@ -55,6 +58,10 @@ Choose **Backup only** to save the current window tabs while keeping them open.
 
 Choose **Backup and close tabs** to save the current window tabs, open a new tab, and close the original tabs in that window.
 
+Turn on **Automatic cleanup** to archive and close tabs that have not been accessed for the selected threshold. You can also click **Run cleanup now** to apply the same rule immediately.
+
+Automatic cleanup depends on Chrome's tab last-accessed timestamp. If a Chrome build does not expose that timestamp, affected tabs are skipped instead of being closed.
+
 After backup, the bookmarks bar will contain a structure similar to:
 
 ```text
@@ -68,11 +75,21 @@ Window Bookmark Archive 2026-06-05 16.30.00
     +-- report.html
 ```
 
+Automatic cleanup uses the same site grouping under a folder such as:
+
+```text
+Automatic Tab Archive 2026-06-05 18.00.00
++-- github.com
+|   +-- Issue tracker
++-- developer.chrome.com
+    +-- tabs API
+```
+
 ## Privacy
 
-The extension only uses Chrome extension APIs for tabs, bookmarks, and local extension storage. It does not send browsing data to any external service.
+The extension only uses Chrome extension APIs for tabs, bookmarks, alarms, and local extension storage. It does not send browsing data to any external service.
 
-The last successful backup time is stored in `chrome.storage.local` so the popup can show it later.
+The last successful backup time, automatic cleanup settings, and latest automatic cleanup result are stored in `chrome.storage.local` so the popup can show them later.
 
 ## Project Structure
 
@@ -80,7 +97,7 @@ The last successful backup time is stored in `chrome.storage.local` so the popup
 chrome-window-bookmark-archiver/
 +-- assets/              Extension logo and Chrome icon sizes
 +-- _locales/            English and Chinese i18n messages
-+-- chrome-window-bookmark-archiver-1.3.4.zip
++-- chrome-window-bookmark-archiver-1.4.0.zip
 |                       Local install ZIP package
 +-- background.js        Bookmark backup and tab closing logic
 +-- popup.html           Extension popup markup
@@ -98,10 +115,10 @@ This extension has no build step. Edit the source files directly, then reload th
 To make a local install ZIP from the repository root:
 
 ```bash
-rm -f chrome-window-bookmark-archiver-*.zip
+find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.3.4.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.0.zip
 rm -rf "$staging"
 ```

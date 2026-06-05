@@ -4,7 +4,7 @@
     "description": "扩展名称"
   },
   "extensionDescription": {
-    "message": "一键将当前 Chrome 窗口打开的所有页面按网站分类收藏，并可选择备份后关闭原标签页。",
+    "message": "将 Chrome 标签页按网站分类收藏，支持手动备份模式和可选的长期未访问标签页定时清理。",
     "description": "扩展描述"
   },
   "actionTitle": {
@@ -14,6 +14,10 @@
   "topFolderPrefix": {
     "message": "窗口页面归档",
     "description": "新建总书签文件夹前缀"
+  },
+  "autoTopFolderPrefix": {
+    "message": "自动页面归档",
+    "description": "自动清理时的新建总书签文件夹前缀"
   },
   "archiveInProgressTitle": {
     "message": "正在归档当前窗口页面...",
@@ -26,6 +30,18 @@
   "emptyWindowTitle": {
     "message": "当前窗口没有可收藏的页面。",
     "description": "没有可收藏页面时的提示"
+  },
+  "autoCleanupCompletedTitle": {
+    "message": "已自动收藏 $COUNT$ 个页面，并关闭 $CLOSED$ 个标签页。",
+    "description": "自动清理完成提示",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
   },
   "savedTitle": {
     "message": "已收藏 $COUNT$ 个页面。",
@@ -131,6 +147,154 @@
   "backupCloseHint": {
     "message": "先打开一个新标签页，再关闭当前窗口原有标签页",
     "description": "备份并关闭按钮说明"
+  },
+  "autoCleanupTitle": {
+    "message": "自动清理",
+    "description": "自动清理面板标题"
+  },
+  "autoCleanupSubtitle": {
+    "message": "定时归档并关闭长期未访问的标签页",
+    "description": "自动清理面板副标题"
+  },
+  "autoCleanupToggleLabel": {
+    "message": "开启自动清理",
+    "description": "自动清理开关无障碍标签"
+  },
+  "autoCleanupThresholdLabel": {
+    "message": "关闭未访问超过",
+    "description": "自动清理未访问时间阈值标签"
+  },
+  "autoCleanupIntervalLabel": {
+    "message": "检查频率",
+    "description": "自动清理检查间隔标签"
+  },
+  "durationOneHour": {
+    "message": "1 小时",
+    "description": "一小时选项"
+  },
+  "durationSixHours": {
+    "message": "6 小时",
+    "description": "六小时选项"
+  },
+  "durationTwelveHours": {
+    "message": "12 小时",
+    "description": "十二小时选项"
+  },
+  "durationOneDay": {
+    "message": "1 天",
+    "description": "一天选项"
+  },
+  "durationThreeDays": {
+    "message": "3 天",
+    "description": "三天选项"
+  },
+  "durationSevenDays": {
+    "message": "7 天",
+    "description": "七天选项"
+  },
+  "durationThirtyDays": {
+    "message": "30 天",
+    "description": "三十天选项"
+  },
+  "intervalThirtyMinutes": {
+    "message": "30 分钟",
+    "description": "三十分钟间隔"
+  },
+  "intervalOneHour": {
+    "message": "1 小时",
+    "description": "一小时间隔"
+  },
+  "intervalSixHours": {
+    "message": "6 小时",
+    "description": "六小时间隔"
+  },
+  "intervalTwelveHours": {
+    "message": "12 小时",
+    "description": "十二小时间隔"
+  },
+  "autoCleanupProtectionNote": {
+    "message": "置顶、当前活动、正在播放、无痕和 Chrome 内部标签页不会被自动关闭。",
+    "description": "自动清理保护规则说明"
+  },
+  "lastAutoCleanupLabel": {
+    "message": "上一次自动清理",
+    "description": "最近自动清理时间标签"
+  },
+  "lastAutoCleanupSummary": {
+    "message": "发现 $STALE$ 个过期标签页，已收藏 $SAVED$ 个，关闭 $CLOSED$ 个，跳过 $SKIPPED$ 个。",
+    "description": "上一次自动清理结果摘要",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      },
+      "skipped": {
+        "content": "$3"
+      },
+      "stale": {
+        "content": "$4"
+      }
+    }
+  },
+  "runAutoCleanupButton": {
+    "message": "立即清理一次",
+    "description": "立即运行自动清理按钮"
+  },
+  "autoCleanupSavingStatus": {
+    "message": "正在保存自动清理设置...",
+    "description": "自动清理设置保存中状态"
+  },
+  "autoCleanupSettingsSavedStatus": {
+    "message": "自动清理设置已保存。",
+    "description": "自动清理设置已保存状态"
+  },
+  "autoCleanupEnabledStatus": {
+    "message": "自动清理已开启。",
+    "description": "自动清理开启状态"
+  },
+  "autoCleanupDisabledStatus": {
+    "message": "自动清理已关闭。",
+    "description": "自动清理关闭状态"
+  },
+  "autoCleanupRunningStatus": {
+    "message": "正在执行自动清理...",
+    "description": "自动清理运行中状态"
+  },
+  "autoCleanupNothingStatus": {
+    "message": "没有符合当前规则的过期标签页。",
+    "description": "没有可自动清理标签页状态"
+  },
+  "autoCleanupSavedAndClosedStatus": {
+    "message": "自动清理已收藏 $SAVED$ 个页面，并关闭 $CLOSED$ 个标签页。",
+    "description": "自动清理收藏并关闭成功状态",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "autoCleanupSavedStatus": {
+    "message": "自动清理已收藏 $SAVED$ 个页面。",
+    "description": "自动清理收藏成功状态",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      }
+    }
+  },
+  "autoCleanupNoBookmarkableStatus": {
+    "message": "发现 $STALE$ 个过期标签页，但没有页面可以成功收藏。",
+    "description": "发现过期标签页但无法收藏状态",
+    "placeholders": {
+      "stale": {
+        "content": "$1"
+      }
+    }
   },
   "statusReady": {
     "message": "请选择一个操作。",

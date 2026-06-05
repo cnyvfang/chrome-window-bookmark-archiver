@@ -4,7 +4,7 @@
     "description": "Extension name"
   },
   "extensionDescription": {
-    "message": "Save every tab in the current Chrome window into grouped bookmarks, with an option to close the original tabs after backup.",
+    "message": "Save Chrome tabs into grouped bookmarks, with manual backup modes and optional scheduled cleanup for stale tabs.",
     "description": "Extension description"
   },
   "actionTitle": {
@@ -14,6 +14,10 @@
   "topFolderPrefix": {
     "message": "Window Bookmark Archive",
     "description": "Top-level bookmark folder prefix"
+  },
+  "autoTopFolderPrefix": {
+    "message": "Automatic Tab Archive",
+    "description": "Top-level bookmark folder prefix for automatic cleanup"
   },
   "archiveInProgressTitle": {
     "message": "Archiving tabs in the current window...",
@@ -26,6 +30,18 @@
   "emptyWindowTitle": {
     "message": "There are no bookmarkable pages in the current window.",
     "description": "Empty-window status title"
+  },
+  "autoCleanupCompletedTitle": {
+    "message": "Automatically saved $COUNT$ pages and closed $CLOSED$ tabs.",
+    "description": "Automatic cleanup completion status title",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
   },
   "savedTitle": {
     "message": "Saved $COUNT$ pages.",
@@ -131,6 +147,154 @@
   "backupCloseHint": {
     "message": "Open a new tab, then close the original tabs in this window",
     "description": "Backup-and-close button hint"
+  },
+  "autoCleanupTitle": {
+    "message": "Automatic cleanup",
+    "description": "Automatic cleanup panel title"
+  },
+  "autoCleanupSubtitle": {
+    "message": "Archive and close stale tabs on a schedule",
+    "description": "Automatic cleanup panel subtitle"
+  },
+  "autoCleanupToggleLabel": {
+    "message": "Enable automatic cleanup",
+    "description": "Accessible label for the automatic cleanup toggle"
+  },
+  "autoCleanupThresholdLabel": {
+    "message": "Close tabs inactive for",
+    "description": "Automatic cleanup inactivity threshold label"
+  },
+  "autoCleanupIntervalLabel": {
+    "message": "Check every",
+    "description": "Automatic cleanup interval label"
+  },
+  "durationOneHour": {
+    "message": "1 hour",
+    "description": "One-hour duration label"
+  },
+  "durationSixHours": {
+    "message": "6 hours",
+    "description": "Six-hour duration label"
+  },
+  "durationTwelveHours": {
+    "message": "12 hours",
+    "description": "Twelve-hour duration label"
+  },
+  "durationOneDay": {
+    "message": "1 day",
+    "description": "One-day duration label"
+  },
+  "durationThreeDays": {
+    "message": "3 days",
+    "description": "Three-day duration label"
+  },
+  "durationSevenDays": {
+    "message": "7 days",
+    "description": "Seven-day duration label"
+  },
+  "durationThirtyDays": {
+    "message": "30 days",
+    "description": "Thirty-day duration label"
+  },
+  "intervalThirtyMinutes": {
+    "message": "30 minutes",
+    "description": "Thirty-minute interval label"
+  },
+  "intervalOneHour": {
+    "message": "1 hour",
+    "description": "One-hour interval label"
+  },
+  "intervalSixHours": {
+    "message": "6 hours",
+    "description": "Six-hour interval label"
+  },
+  "intervalTwelveHours": {
+    "message": "12 hours",
+    "description": "Twelve-hour interval label"
+  },
+  "autoCleanupProtectionNote": {
+    "message": "Pinned, active, audible, incognito, and internal Chrome tabs are protected.",
+    "description": "Automatic cleanup protection note"
+  },
+  "lastAutoCleanupLabel": {
+    "message": "Last automatic cleanup",
+    "description": "Last automatic cleanup time label"
+  },
+  "lastAutoCleanupSummary": {
+    "message": "Matched $STALE$ stale tabs. Saved $SAVED$, closed $CLOSED$, skipped $SKIPPED$.",
+    "description": "Last automatic cleanup result summary",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      },
+      "skipped": {
+        "content": "$3"
+      },
+      "stale": {
+        "content": "$4"
+      }
+    }
+  },
+  "runAutoCleanupButton": {
+    "message": "Run cleanup now",
+    "description": "Run automatic cleanup now button"
+  },
+  "autoCleanupSavingStatus": {
+    "message": "Saving automatic cleanup settings...",
+    "description": "Automatic cleanup settings saving status"
+  },
+  "autoCleanupSettingsSavedStatus": {
+    "message": "Automatic cleanup settings saved.",
+    "description": "Automatic cleanup settings saved status"
+  },
+  "autoCleanupEnabledStatus": {
+    "message": "Automatic cleanup is on.",
+    "description": "Automatic cleanup enabled status"
+  },
+  "autoCleanupDisabledStatus": {
+    "message": "Automatic cleanup is off.",
+    "description": "Automatic cleanup disabled status"
+  },
+  "autoCleanupRunningStatus": {
+    "message": "Running automatic cleanup...",
+    "description": "Automatic cleanup running status"
+  },
+  "autoCleanupNothingStatus": {
+    "message": "No stale tabs matched the current rule.",
+    "description": "Automatic cleanup no stale tabs status"
+  },
+  "autoCleanupSavedAndClosedStatus": {
+    "message": "Automatic cleanup saved $SAVED$ pages and closed $CLOSED$ tabs.",
+    "description": "Automatic cleanup saved and closed status",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "autoCleanupSavedStatus": {
+    "message": "Automatic cleanup saved $SAVED$ pages.",
+    "description": "Automatic cleanup saved status",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      }
+    }
+  },
+  "autoCleanupNoBookmarkableStatus": {
+    "message": "Found $STALE$ stale tabs, but none could be archived.",
+    "description": "Automatic cleanup found stale tabs but could not bookmark them",
+    "placeholders": {
+      "stale": {
+        "content": "$1"
+      }
+    }
   },
   "statusReady": {
     "message": "Choose an action.",
