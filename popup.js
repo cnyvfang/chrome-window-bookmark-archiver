@@ -1,6 +1,9 @@
 const STORAGE_KEYS = {
-  lastBackupAt: "lastBackupAt"
+  lastBackupAt: "lastBackupAt",
+  manualCleanupScope: "manualCleanupScope"
 };
+
+const ALLOWED_MANUAL_CLEANUP_SCOPES = new Set(["all", "60", "360", "720", "1440", "4320", "10080", "43200"]);
 
 const DEFAULT_AUTO_CLEANUP_SETTINGS = {
   enabled: false,
@@ -25,7 +28,7 @@ const FALLBACK_MESSAGES = {
   autoCleanupTitle: "Automatic cleanup",
   autoCleanupToggleLabel: "Enable automatic cleanup",
   backupCloseButton: "Backup and close tabs",
-  backupCloseHint: "Open a new tab, then close current tabs",
+  backupCloseHint: "Save tabs in the selected close range, then close them",
   backupOnlyButton: "Backup only",
   backupOnlyHint: "Save tabs without closing them",
   durationOneDay: "1 day",
@@ -43,11 +46,21 @@ const FALLBACK_MESSAGES = {
   lastAutoCleanupSummary: "Matched $4 stale tabs. Saved $1, closed $2, skipped $3.",
   lastBackupLabel: "Last backup",
   lastBackupNever: "Never",
+  manualCleanupScopeAll: "All tabs",
+  manualCleanupScopeLabel: "Backup and close range",
+  manualCleanupScopeOneDay: "Tabs inactive for 1 day",
+  manualCleanupScopeOneHour: "Tabs inactive for 1 hour",
+  manualCleanupScopeSevenDays: "Tabs inactive for 7 days",
+  manualCleanupScopeSixHours: "Tabs inactive for 6 hours",
+  manualCleanupScopeThirtyDays: "Tabs inactive for 30 days",
+  manualCleanupScopeThreeDays: "Tabs inactive for 3 days",
+  manualCleanupScopeTwelveHours: "Tabs inactive for 12 hours",
   popupSubtitle: "Archive the current window",
   popupTitle: "Window Bookmark Archiver",
   runAutoCleanupButton: "Run cleanup now",
   statusArchiving: "Archiving...",
   statusFailed: "Backup failed.",
+  statusManualCleanupNoMatch: "No tabs matched the selected cleanup range.",
   statusNoWindow: "Could not find the current window.",
   statusNothingToBackup: "There are no pages to back up in this window.",
   statusReady: "Choose an action.",
@@ -65,6 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindEvents();
 
   await renderLastBackup();
+  await loadManualCleanupScope();
   await loadAutoCleanupState();
 });
 
@@ -77,6 +91,7 @@ function cacheElements() {
   elements.lastAutoCleanupSummary = document.getElementById("lastAutoCleanupSummary");
   elements.lastAutoCleanupTime = document.getElementById("lastAutoCleanupTime");
   elements.lastBackupTime = document.getElementById("lastBackupTime");
+  elements.manualCleanupScope = document.getElementById("manualCleanupScope");
   elements.runAutoCleanupButton = document.getElementById("runAutoCleanupButton");
   elements.status = document.getElementById("status");
 }
@@ -84,6 +99,7 @@ function cacheElements() {
 function bindEvents() {
   elements.backupOnlyButton.addEventListener("click", () => runBackup(false));
   elements.backupCloseButton.addEventListener("click", () => runBackup(true));
+  elements.manualCleanupScope.addEventListener("change", saveManualCleanupScope);
   elements.autoCleanupEnabled.addEventListener("change", saveAutoCleanupSettings);
   elements.autoCleanupThreshold.addEventListener("change", saveAutoCleanupSettings);
   elements.autoCleanupInterval.addEventListener("change", saveAutoCleanupSettings);
@@ -131,6 +147,7 @@ async function runBackup(closeOriginalTabs) {
     const windowId = await getCurrentWindowId();
     const response = await sendMessage({
       closeOriginalTabs,
+      closeThresholdMinutes: closeOriginalTabs ? readManualCleanupThreshold() : null,
       type: "archive-window",
       windowId
     });
@@ -146,6 +163,26 @@ async function runBackup(closeOriginalTabs) {
     setStatus(error?.message || t("statusFailed"), "error");
   } finally {
     setBusy(false);
+  }
+}
+
+async function loadManualCleanupScope() {
+  try {
+    const values = await getStorage(STORAGE_KEYS.manualCleanupScope);
+    elements.manualCleanupScope.value = normalizeManualCleanupScope(values[STORAGE_KEYS.manualCleanupScope]);
+  } catch {
+    elements.manualCleanupScope.value = "all";
+  }
+}
+
+async function saveManualCleanupScope() {
+  const scope = normalizeManualCleanupScope(elements.manualCleanupScope.value);
+  elements.manualCleanupScope.value = scope;
+
+  try {
+    await setStorage({ [STORAGE_KEYS.manualCleanupScope]: scope });
+  } catch (error) {
+    setStatus(error?.message || t("statusFailed"), "error");
   }
 }
 
@@ -275,6 +312,19 @@ function getStorage(key) {
   });
 }
 
+function setStorage(values) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.set(values, () => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
 function sendMessage(message) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(message, (response) => {
@@ -286,6 +336,16 @@ function sendMessage(message) {
       resolve(response);
     });
   });
+}
+
+function readManualCleanupThreshold() {
+  const scope = normalizeManualCleanupScope(elements.manualCleanupScope.value);
+  return scope === "all" ? null : Number(scope);
+}
+
+function normalizeManualCleanupScope(scope) {
+  const normalized = String(scope || "all");
+  return ALLOWED_MANUAL_CLEANUP_SCOPES.has(normalized) ? normalized : "all";
 }
 
 function readAutoCleanupSettings() {
@@ -314,6 +374,14 @@ function normalizeAutoCleanupSettings(settings) {
 }
 
 function getSuccessStatus(result) {
+  if (
+    result.closeOriginalTabs &&
+    result.closeThresholdMinutes !== null &&
+    result.matchedCount === 0
+  ) {
+    return t("statusManualCleanupNoMatch");
+  }
+
   if (result.lastBackupAt === null) {
     return t("statusNothingToBackup");
   }
@@ -359,6 +427,7 @@ function getAutoCleanupStatus(result) {
 function setBusy(isBusy) {
   elements.backupOnlyButton.disabled = isBusy;
   elements.backupCloseButton.disabled = isBusy;
+  elements.manualCleanupScope.disabled = isBusy;
   elements.runAutoCleanupButton.disabled = isBusy;
 }
 

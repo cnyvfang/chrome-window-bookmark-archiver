@@ -11,13 +11,13 @@
 <p align="center">
   <a href="README.zh-CN.md">简体中文</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.4.0.zip">Download ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.4.1.zip">Download ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.4.0-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.4.1-111827">
 </p>
 
 ## What It Does
@@ -31,7 +31,8 @@ It can also run scheduled cleanup for stale tabs. When enabled, it archives tabs
 - Backs up all tabs in the current Chrome window.
 - Groups bookmarks by website domain, such as `github.com` or `google.com`.
 - Creates a new timestamped top-level bookmark folder for each backup.
-- Offers two modes: backup only, or backup and close original tabs after opening a new tab.
+- Offers two modes: backup only, or backup and close tabs.
+- Manual backup-and-close can close all tabs or only tabs inactive for 1 hour to 30 days.
 - Shows the last successful backup time in the popup.
 - Optional scheduled cleanup for tabs that have not been accessed for 1 hour to 30 days.
 - Shows the last automatic cleanup time and result summary.
@@ -41,7 +42,7 @@ It can also run scheduled cleanup for stale tabs. When enabled, it archives tabs
 
 ## Install Locally
 
-1. Download [chrome-window-bookmark-archiver-1.4.0.zip](chrome-window-bookmark-archiver-1.4.0.zip).
+1. Download [chrome-window-bookmark-archiver-1.4.1.zip](chrome-window-bookmark-archiver-1.4.1.zip).
 2. Unzip the file.
 3. Open Chrome and go to `chrome://extensions/`.
 4. Turn on **Developer mode**.
@@ -56,7 +57,11 @@ Click the extension icon to open the popup.
 
 Choose **Backup only** to save the current window tabs while keeping them open.
 
-Choose **Backup and close tabs** to save the current window tabs, open a new tab, and close the original tabs in that window.
+Choose a **Backup and close range**, then choose **Backup and close tabs**.
+
+If the range is **All tabs**, the extension saves the current window tabs, opens a new tab, and closes the original tabs in that window.
+
+If the range is an inactivity threshold, the extension saves and closes only matching tabs in the current window. Pinned, active, audible, incognito, and internal Chrome tabs are skipped for threshold-based cleanup.
 
 Turn on **Automatic cleanup** to archive and close tabs that have not been accessed for the selected threshold. You can also click **Run cleanup now** to apply the same rule immediately.
 
@@ -89,7 +94,7 @@ Automatic Tab Archive 2026-06-05 18.00.00
 
 The extension only uses Chrome extension APIs for tabs, bookmarks, alarms, and local extension storage. It does not send browsing data to any external service.
 
-The last successful backup time, automatic cleanup settings, and latest automatic cleanup result are stored in `chrome.storage.local` so the popup can show them later.
+The last successful backup time, manual close range, automatic cleanup settings, and latest automatic cleanup result are stored in `chrome.storage.local` so the popup can show them later.
 
 ## Project Structure
 
@@ -97,7 +102,7 @@ The last successful backup time, automatic cleanup settings, and latest automati
 chrome-window-bookmark-archiver/
 +-- assets/              Extension logo and Chrome icon sizes
 +-- _locales/            English and Chinese i18n messages
-+-- chrome-window-bookmark-archiver-1.4.0.zip
++-- chrome-window-bookmark-archiver-1.4.1.zip
 |                       Local install ZIP package
 +-- background.js        Bookmark backup and tab closing logic
 +-- popup.html           Extension popup markup
@@ -119,6 +124,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.0.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.1.zip
 rm -rf "$staging"
 ```

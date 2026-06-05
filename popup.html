@@ -26,9 +26,24 @@
           <span class="button-title" data-i18n="backupOnlyButton">Backup only</span>
           <span class="button-hint" data-i18n="backupOnlyHint">Save tabs without closing them</span>
         </button>
+
+        <label class="manual-cleanup-options field">
+          <span data-i18n="manualCleanupScopeLabel">Backup and close range</span>
+          <select id="manualCleanupScope">
+            <option value="all" data-i18n="manualCleanupScopeAll">All tabs</option>
+            <option value="60" data-i18n="manualCleanupScopeOneHour">Tabs inactive for 1 hour</option>
+            <option value="360" data-i18n="manualCleanupScopeSixHours">Tabs inactive for 6 hours</option>
+            <option value="720" data-i18n="manualCleanupScopeTwelveHours">Tabs inactive for 12 hours</option>
+            <option value="1440" data-i18n="manualCleanupScopeOneDay">Tabs inactive for 1 day</option>
+            <option value="4320" data-i18n="manualCleanupScopeThreeDays">Tabs inactive for 3 days</option>
+            <option value="10080" data-i18n="manualCleanupScopeSevenDays">Tabs inactive for 7 days</option>
+            <option value="43200" data-i18n="manualCleanupScopeThirtyDays">Tabs inactive for 30 days</option>
+          </select>
+        </label>
+
         <button id="backupCloseButton" class="action-button danger" type="button">
           <span class="button-title" data-i18n="backupCloseButton">Backup and close tabs</span>
-          <span class="button-hint" data-i18n="backupCloseHint">Open a new tab, then close current tabs</span>
+          <span class="button-hint" data-i18n="backupCloseHint">Save tabs in the selected close range, then close them</span>
         </button>
       </section>
 

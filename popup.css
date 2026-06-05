@@ -142,6 +142,13 @@ h1 {
   opacity: 0.86;
 }
 
+.manual-cleanup-options {
+  padding: 10px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
 .settings-panel {
   display: grid;
   gap: 10px;

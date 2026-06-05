@@ -31,6 +31,10 @@
     "message": "当前窗口没有可收藏的页面。",
     "description": "没有可收藏页面时的提示"
   },
+  "manualCleanupNoMatchTitle": {
+    "message": "没有符合所选清理范围的标签页。",
+    "description": "没有符合手动清理范围标签页时的按钮标题"
+  },
   "autoCleanupCompletedTitle": {
     "message": "已自动收藏 $COUNT$ 个页面，并关闭 $CLOSED$ 个标签页。",
     "description": "自动清理完成提示",
@@ -145,8 +149,44 @@
     "description": "备份并关闭按钮"
   },
   "backupCloseHint": {
-    "message": "先打开一个新标签页，再关闭当前窗口原有标签页",
+    "message": "按所选范围保存标签页，然后关闭这些标签页",
     "description": "备份并关闭按钮说明"
+  },
+  "manualCleanupScopeLabel": {
+    "message": "备份并关闭范围",
+    "description": "手动备份并关闭范围选择标签"
+  },
+  "manualCleanupScopeAll": {
+    "message": "全部标签页",
+    "description": "手动清理全部标签页选项"
+  },
+  "manualCleanupScopeOneHour": {
+    "message": "1 小时未访问的标签页",
+    "description": "手动清理一小时未访问选项"
+  },
+  "manualCleanupScopeSixHours": {
+    "message": "6 小时未访问的标签页",
+    "description": "手动清理六小时未访问选项"
+  },
+  "manualCleanupScopeTwelveHours": {
+    "message": "12 小时未访问的标签页",
+    "description": "手动清理十二小时未访问选项"
+  },
+  "manualCleanupScopeOneDay": {
+    "message": "1 天未访问的标签页",
+    "description": "手动清理一天未访问选项"
+  },
+  "manualCleanupScopeThreeDays": {
+    "message": "3 天未访问的标签页",
+    "description": "手动清理三天未访问选项"
+  },
+  "manualCleanupScopeSevenDays": {
+    "message": "7 天未访问的标签页",
+    "description": "手动清理七天未访问选项"
+  },
+  "manualCleanupScopeThirtyDays": {
+    "message": "30 天未访问的标签页",
+    "description": "手动清理三十天未访问选项"
   },
   "autoCleanupTitle": {
     "message": "自动清理",
@@ -307,6 +347,10 @@
   "statusFailed": {
     "message": "备份失败。",
     "description": "弹窗失败状态"
+  },
+  "statusManualCleanupNoMatch": {
+    "message": "没有符合所选清理范围的标签页。",
+    "description": "没有符合手动清理范围的标签页状态"
   },
   "statusNoWindow": {
     "message": "无法找到当前窗口。",

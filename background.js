@@ -1,5 +1,7 @@
 const AUTO_CLEANUP_ALARM_NAME = "auto-cleanup-stale-tabs";
 
+const ALLOWED_CLEANUP_THRESHOLDS = new Set([60, 360, 720, 1440, 4320, 10080, 43200]);
+
 const DEFAULT_AUTO_CLEANUP_SETTINGS = {
   enabled: false,
   intervalMinutes: 60,
@@ -15,6 +17,7 @@ const FALLBACK_MESSAGES = {
   emptyWindowTitle: "当前窗口没有可收藏的页面。",
   errorBadge: "失败",
   localFilesFolder: "本地文件",
+  manualCleanupNoMatchTitle: "没有符合所选清理范围的标签页。",
   otherFolder: "其他",
   savedTitle: "已收藏 $COUNT$ 个页面。",
   savedAndClosedTitle: "已收藏 $COUNT$ 个页面，已关闭 $CLOSED$ 个标签页。",
@@ -54,6 +57,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "archive-window") {
     archiveCurrentWindow({
       closeOriginalTabs: Boolean(message.closeOriginalTabs),
+      closeThresholdMinutes: message.closeThresholdMinutes,
       windowId: message.windowId
     }).then((result) => {
       sendResponse({ ok: true, result });
@@ -112,36 +116,55 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 async function archiveCurrentWindow(options = {}) {
-  const { closeOriginalTabs = false, windowId } = options;
+  const {
+    closeOriginalTabs = false,
+    windowId
+  } = options;
+  const closeThresholdMinutes = normalizeOptionalCleanupThreshold(options.closeThresholdMinutes);
 
   setActionFeedback("...", "#5f6368", t("archiveInProgressTitle"));
 
   const queryInfo = Number.isInteger(windowId) ? { windowId } : { currentWindow: true };
   const tabs = await queryTabs(queryInfo);
   const originalTabs = sortTabs(tabs);
-  const archiveResult = await archiveTabs(originalTabs, {
+  const tabsToArchive = closeOriginalTabs && closeThresholdMinutes !== null
+    ? getStaleTabs(originalTabs, closeThresholdMinutes)
+    : originalTabs;
+  const archiveResult = await archiveTabs(tabsToArchive, {
     recordLastBackup: true,
     topFolderPrefixMessageName: "topFolderPrefix"
   });
 
   if (archiveResult.savedCount === 0 && archiveResult.skippedCount === 0) {
-    setActionFeedback(t("emptyBadge"), "#5f6368", t("emptyWindowTitle"));
+    const emptyTitle = closeOriginalTabs && closeThresholdMinutes !== null
+      ? t("manualCleanupNoMatchTitle")
+      : t("emptyWindowTitle");
+    setActionFeedback(t("emptyBadge"), "#5f6368", emptyTitle);
     return {
       ...archiveResult,
-      closedCount: 0
+      closeOriginalTabs,
+      closeThresholdMinutes,
+      closedCount: 0,
+      matchedCount: tabsToArchive.length
     };
   }
 
-  const closedCount = closeOriginalTabs
-    ? await openNewTabAndCloseTabs(originalTabs)
-    : 0;
+  let closedCount = 0;
+  if (closeOriginalTabs && closeThresholdMinutes === null) {
+    closedCount = await openNewTabAndCloseTabs(originalTabs);
+  } else if (closeOriginalTabs) {
+    closedCount = await removeTabsSafely(archiveResult.savedTabIds);
+  }
 
   const resultTitle = getResultTitle(archiveResult.savedCount, archiveResult.skippedCount, closedCount);
   setActionFeedback(String(archiveResult.savedCount), archiveResult.skippedCount ? "#f29900" : "#137333", resultTitle);
 
   return {
     ...archiveResult,
-    closedCount
+    closeOriginalTabs,
+    closeThresholdMinutes,
+    closedCount,
+    matchedCount: tabsToArchive.length
   };
 }
 
@@ -343,7 +366,6 @@ async function syncAutoCleanupAlarm(settings) {
 
 function normalizeAutoCleanupSettings(settings) {
   const allowedIntervals = new Set([30, 60, 360, 720]);
-  const allowedThresholds = new Set([60, 360, 720, 1440, 4320, 10080, 43200]);
   const intervalMinutes = Number(settings?.intervalMinutes);
   const thresholdMinutes = Number(settings?.thresholdMinutes);
 
@@ -352,10 +374,19 @@ function normalizeAutoCleanupSettings(settings) {
     intervalMinutes: allowedIntervals.has(intervalMinutes)
       ? intervalMinutes
       : DEFAULT_AUTO_CLEANUP_SETTINGS.intervalMinutes,
-    thresholdMinutes: allowedThresholds.has(thresholdMinutes)
+    thresholdMinutes: ALLOWED_CLEANUP_THRESHOLDS.has(thresholdMinutes)
       ? thresholdMinutes
       : DEFAULT_AUTO_CLEANUP_SETTINGS.thresholdMinutes
   };
+}
+
+function normalizeOptionalCleanupThreshold(thresholdMinutes) {
+  if (thresholdMinutes === null || thresholdMinutes === undefined || thresholdMinutes === "all") {
+    return null;
+  }
+
+  const normalized = Number(thresholdMinutes);
+  return ALLOWED_CLEANUP_THRESHOLDS.has(normalized) ? normalized : null;
 }
 
 function queryTabs(queryInfo) {

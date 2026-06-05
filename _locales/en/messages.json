@@ -31,6 +31,10 @@
     "message": "There are no bookmarkable pages in the current window.",
     "description": "Empty-window status title"
   },
+  "manualCleanupNoMatchTitle": {
+    "message": "No tabs matched the selected cleanup range.",
+    "description": "No tabs matched the manual cleanup range action title"
+  },
   "autoCleanupCompletedTitle": {
     "message": "Automatically saved $COUNT$ pages and closed $CLOSED$ tabs.",
     "description": "Automatic cleanup completion status title",
@@ -145,8 +149,44 @@
     "description": "Backup-and-close button"
   },
   "backupCloseHint": {
-    "message": "Open a new tab, then close the original tabs in this window",
+    "message": "Save tabs in the selected close range, then close them",
     "description": "Backup-and-close button hint"
+  },
+  "manualCleanupScopeLabel": {
+    "message": "Backup and close range",
+    "description": "Manual backup-and-close scope selector label"
+  },
+  "manualCleanupScopeAll": {
+    "message": "All tabs",
+    "description": "Manual cleanup all tabs option"
+  },
+  "manualCleanupScopeOneHour": {
+    "message": "Tabs inactive for 1 hour",
+    "description": "Manual cleanup one-hour inactive option"
+  },
+  "manualCleanupScopeSixHours": {
+    "message": "Tabs inactive for 6 hours",
+    "description": "Manual cleanup six-hour inactive option"
+  },
+  "manualCleanupScopeTwelveHours": {
+    "message": "Tabs inactive for 12 hours",
+    "description": "Manual cleanup twelve-hour inactive option"
+  },
+  "manualCleanupScopeOneDay": {
+    "message": "Tabs inactive for 1 day",
+    "description": "Manual cleanup one-day inactive option"
+  },
+  "manualCleanupScopeThreeDays": {
+    "message": "Tabs inactive for 3 days",
+    "description": "Manual cleanup three-day inactive option"
+  },
+  "manualCleanupScopeSevenDays": {
+    "message": "Tabs inactive for 7 days",
+    "description": "Manual cleanup seven-day inactive option"
+  },
+  "manualCleanupScopeThirtyDays": {
+    "message": "Tabs inactive for 30 days",
+    "description": "Manual cleanup thirty-day inactive option"
   },
   "autoCleanupTitle": {
     "message": "Automatic cleanup",
@@ -307,6 +347,10 @@
   "statusFailed": {
     "message": "Backup failed.",
     "description": "Failure popup status"
+  },
+  "statusManualCleanupNoMatch": {
+    "message": "No tabs matched the selected cleanup range.",
+    "description": "No tabs matched the manual cleanup range"
   },
   "statusNoWindow": {
     "message": "Could not find the current window.",

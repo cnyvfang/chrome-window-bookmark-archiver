@@ -11,13 +11,13 @@
 <p align="center">
   <a href="README.md">English</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.4.0.zip">下载 ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.4.1.zip">下载 ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.4.0-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.4.1-111827">
 </p>
 
 ## 功能简介
@@ -31,7 +31,8 @@
 - 备份当前 Chrome 窗口里的所有标签页。
 - 按网站域名分组，例如 `github.com`、`google.com`。
 - 每次备份都会创建一个新的带时间戳的顶层书签文件夹。
-- 支持两种模式：只进行收藏备份，或备份后打开一个新标签页并关闭原标签页。
+- 支持两种模式：只进行收藏备份，或备份并关闭标签页。
+- 手动备份并关闭可以选择关闭全部标签页，或只关闭 1 小时到 30 天未访问的标签页。
 - 弹窗中显示上一次成功备份时间。
 - 可选定时清理 1 小时到 30 天未访问的标签页。
 - 显示上一次自动清理时间和结果摘要。
@@ -41,7 +42,7 @@
 
 ## 本地安装
 
-1. 下载 [chrome-window-bookmark-archiver-1.4.0.zip](chrome-window-bookmark-archiver-1.4.0.zip)。
+1. 下载 [chrome-window-bookmark-archiver-1.4.1.zip](chrome-window-bookmark-archiver-1.4.1.zip)。
 2. 解压该文件。
 3. 打开 Chrome，进入 `chrome://extensions/`。
 4. 打开右上角的 **开发者模式**。
@@ -56,7 +57,11 @@
 
 选择 **只进行收藏备份**，会保存当前窗口标签页，并保留所有标签页打开。
 
-选择 **备份并关闭标签页**，会保存当前窗口标签页，打开一个新标签页，然后关闭该窗口原有标签页。
+先选择 **备份并关闭范围**，再选择 **备份并关闭标签页**。
+
+如果范围是 **全部标签页**，扩展会保存当前窗口标签页，打开一个新标签页，然后关闭该窗口原有标签页。
+
+如果范围是未访问时间阈值，扩展只会保存并关闭当前窗口里符合条件的标签页。置顶、当前活动、正在播放、无痕和 Chrome 内部标签页会被跳过。
 
 开启 **自动清理** 后，扩展会按所选阈值归档并关闭长期未访问的标签页。也可以点击 **立即清理一次**，立刻按同一规则执行一次。
 
@@ -89,7 +94,7 @@
 
 扩展只使用 Chrome 的标签页、书签、定时任务和扩展本地存储 API，不会把浏览数据发送到任何外部服务。
 
-上一次成功备份时间、自动清理设置和最近一次自动清理结果会保存在 `chrome.storage.local` 中，用于之后在弹窗里显示。
+上一次成功备份时间、手动关闭范围、自动清理设置和最近一次自动清理结果会保存在 `chrome.storage.local` 中，用于之后在弹窗里显示。
 
 ## 项目结构
 
@@ -97,7 +102,7 @@
 chrome-window-bookmark-archiver/
 +-- assets/              扩展 logo 和 Chrome 图标尺寸
 +-- _locales/            英文和中文 i18n 文案
-+-- chrome-window-bookmark-archiver-1.4.0.zip
++-- chrome-window-bookmark-archiver-1.4.1.zip
 |                       本地安装 ZIP 包
 +-- background.js        书签备份和关闭标签页逻辑
 +-- popup.html           扩展弹窗结构
@@ -119,6 +124,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.0.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.1.zip
 rm -rf "$staging"
 ```
