@@ -25,7 +25,7 @@ const FALLBACK_MESSAGES = {
   autoCleanupIntervalLabel: "Check every",
   autoCleanupNoBookmarkableStatus: "Found $1 stale tabs, but none could be archived.",
   autoCleanupNothingStatus: "No stale tabs matched the current rule.",
-  autoCleanupProtectionNote: "Pinned, active, audible, incognito, and internal Chrome tabs are protected.",
+  autoCleanupProtectionNote: "Pinned, active, audible, incognito, and internal Chrome tabs are protected. Discarded or unloaded tabs are eligible for cleanup.",
   autoCleanupRunningStatus: "Running automatic cleanup...",
   autoCleanupSavedAndClosedStatus: "Automatic cleanup saved $1 pages and closed $2 tabs.",
   autoCleanupSavedStatus: "Automatic cleanup saved $1 pages.",

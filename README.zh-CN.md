@@ -11,13 +11,13 @@
 <p align="center">
   <a href="README.md">English</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.5.1.zip">下载 ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.5.2.zip">下载 ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.5.1-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.5.2-111827">
 </p>
 
 ## 功能简介
@@ -38,13 +38,14 @@
 - 弹窗中显示上一次成功备份时间。
 - 可选定时清理 1 小时到 30 天未访问的标签页。
 - 显示上一次自动清理时间和结果摘要。
+- 可以在不重新加载页面的情况下清理已卸载或休眠的标签页。
 - 自动清理会保护置顶、当前活动、正在播放、无痕和 Chrome 内部标签页。
 - 扩展界面支持英文和中文，会根据 Chrome 浏览器语言自动切换。
 - 完全本地运行，无服务器、无跟踪、无需构建步骤。
 
 ## 本地安装
 
-1. 下载 [chrome-window-bookmark-archiver-1.5.1.zip](chrome-window-bookmark-archiver-1.5.1.zip)。
+1. 下载 [chrome-window-bookmark-archiver-1.5.2.zip](chrome-window-bookmark-archiver-1.5.2.zip)。
 2. 解压该文件。
 3. 打开 Chrome，进入 `chrome://extensions/`。
 4. 打开右上角的 **开发者模式**。
@@ -71,11 +72,11 @@
 
 如果范围是 **全部标签页**，扩展会保存当前窗口标签页，打开一个新标签页，然后关闭该窗口原有标签页。
 
-如果范围是未访问时间阈值，扩展只会保存并关闭当前窗口里符合条件的标签页。置顶、当前活动、正在播放、无痕和 Chrome 内部标签页会被跳过。
+如果范围是未访问时间阈值，扩展只会保存并关闭当前窗口里符合条件的标签页。已卸载或休眠的标签页即使 Chrome 不再提供可靠访问时间，也会被视为可清理候选。置顶、当前活动、正在播放、无痕和 Chrome 内部标签页会被跳过。
 
 开启 **自动清理** 后，扩展会按所选阈值归档并关闭长期未访问的标签页。也可以点击 **立即清理一次**，立刻按同一规则执行一次。
 
-自动清理依赖 Chrome 提供的标签页最近访问时间。如果某个 Chrome 版本没有提供这个时间，相关标签页会被跳过，不会被关闭。
+自动清理对已加载标签页依赖 Chrome 提供的最近访问时间。已卸载或休眠的标签页仍可在不重新加载页面的情况下被归档并关闭。
 
 完成后，书签栏会出现类似下面的结构：
 
@@ -112,7 +113,7 @@
 chrome-window-bookmark-archiver/
 +-- assets/              扩展 logo 和 Chrome 图标尺寸
 +-- _locales/            英文和中文 i18n 文案
-+-- chrome-window-bookmark-archiver-1.5.1.zip
++-- chrome-window-bookmark-archiver-1.5.2.zip
 |                       本地安装 ZIP 包
 +-- background.js        书签备份和关闭标签页逻辑
 +-- popup.html           扩展弹窗结构
@@ -134,6 +135,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.1.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.2.zip
 rm -rf "$staging"
 ```

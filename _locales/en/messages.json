@@ -310,7 +310,7 @@
     "description": "Twelve-hour interval label"
   },
   "autoCleanupProtectionNote": {
-    "message": "Pinned, active, audible, incognito, and internal Chrome tabs are protected.",
+    "message": "Pinned, active, audible, incognito, and internal Chrome tabs are protected. Discarded or unloaded tabs are eligible for cleanup.",
     "description": "Automatic cleanup protection note"
   },
   "lastAutoCleanupLabel": {

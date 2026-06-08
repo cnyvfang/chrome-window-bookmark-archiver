@@ -310,7 +310,7 @@
     "description": "十二小时间隔"
   },
   "autoCleanupProtectionNote": {
-    "message": "置顶、当前活动、正在播放、无痕和 Chrome 内部标签页不会被自动关闭。",
+    "message": "置顶、当前活动、正在播放、无痕和 Chrome 内部标签页不会被自动关闭。已卸载或休眠的标签页会纳入清理范围。",
     "description": "自动清理保护规则说明"
   },
   "lastAutoCleanupLabel": {

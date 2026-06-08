@@ -11,13 +11,13 @@
 <p align="center">
   <a href="README.zh-CN.md">简体中文</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.5.1.zip">Download ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.5.2.zip">Download ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.5.1-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.5.2-111827">
 </p>
 
 ## What It Does
@@ -38,13 +38,14 @@ It can also run scheduled cleanup for stale tabs. When enabled, it archives tabs
 - Shows the last successful backup time in the popup.
 - Optional scheduled cleanup for tabs that have not been accessed for 1 hour to 30 days.
 - Shows the last automatic cleanup time and result summary.
+- Cleans up discarded or unloaded tabs without reloading them.
 - Protects pinned, active, audible, incognito, and internal Chrome tabs from automatic cleanup.
 - Supports English and Chinese UI text through Chrome i18n.
 - Runs locally with no server, no tracking, and no build step.
 
 ## Install Locally
 
-1. Download [chrome-window-bookmark-archiver-1.5.1.zip](chrome-window-bookmark-archiver-1.5.1.zip).
+1. Download [chrome-window-bookmark-archiver-1.5.2.zip](chrome-window-bookmark-archiver-1.5.2.zip).
 2. Unzip the file.
 3. Open Chrome and go to `chrome://extensions/`.
 4. Turn on **Developer mode**.
@@ -71,11 +72,11 @@ Choose a **Backup and close range**, then choose **Backup and close tabs**.
 
 If the range is **All tabs**, the extension saves the current window tabs, opens a new tab, and closes the original tabs in that window.
 
-If the range is an inactivity threshold, the extension saves and closes only matching tabs in the current window. Pinned, active, audible, incognito, and internal Chrome tabs are skipped for threshold-based cleanup.
+If the range is an inactivity threshold, the extension saves and closes only matching tabs in the current window. Discarded or unloaded tabs are treated as cleanup candidates even when Chrome no longer exposes a reliable access time. Pinned, active, audible, incognito, and internal Chrome tabs are skipped for threshold-based cleanup.
 
 Turn on **Automatic cleanup** to archive and close tabs that have not been accessed for the selected threshold. You can also click **Run cleanup now** to apply the same rule immediately.
 
-Automatic cleanup depends on Chrome's tab last-accessed timestamp. If a Chrome build does not expose that timestamp, affected tabs are skipped instead of being closed.
+Automatic cleanup depends on Chrome's tab last-accessed timestamp for loaded tabs. Discarded or unloaded tabs can still be archived and closed without being reloaded.
 
 After backup, the bookmarks bar will contain a structure similar to:
 
@@ -112,7 +113,7 @@ The last successful backup time, archive folder mode, manual close range, automa
 chrome-window-bookmark-archiver/
 +-- assets/              Extension logo and Chrome icon sizes
 +-- _locales/            English and Chinese i18n messages
-+-- chrome-window-bookmark-archiver-1.5.1.zip
++-- chrome-window-bookmark-archiver-1.5.2.zip
 |                       Local install ZIP package
 +-- background.js        Bookmark backup and tab closing logic
 +-- popup.html           Extension popup markup
@@ -134,6 +135,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.1.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.2.zip
 rm -rf "$staging"
 ```

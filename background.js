@@ -251,7 +251,9 @@ async function archiveTabs(tabs, options = {}) {
     topFolderPrefixMessageName = "topFolderPrefix"
   } = options;
 
-  const bookmarkableTabs = sortTabs(tabs).filter((tab) => tab.url);
+  const bookmarkableTabs = sortTabs(tabs)
+    .map((tab) => ({ ...tab, archiveUrl: getTabUrl(tab) }))
+    .filter((tab) => tab.archiveUrl);
 
   if (bookmarkableTabs.length === 0) {
     return {
@@ -282,7 +284,7 @@ async function archiveTabs(tabs, options = {}) {
   let savedCount = 0;
 
   for (const tab of bookmarkableTabs) {
-    const siteName = getSiteFolderName(tab.url);
+    const siteName = getSiteFolderName(tab.archiveUrl);
 
     if (!foldersBySite.has(siteName)) {
       const siteFolder = await createBookmark({
@@ -296,7 +298,7 @@ async function archiveTabs(tabs, options = {}) {
       await createBookmark({
         parentId: foldersBySite.get(siteName),
         title: getBookmarkTitle(tab),
-        url: tab.url
+        url: tab.archiveUrl
       });
       savedCount += 1;
 
@@ -305,7 +307,7 @@ async function archiveTabs(tabs, options = {}) {
       }
     } catch (error) {
       skipped.push({ tab, error });
-      console.warn(t("skippedBookmarkWarning", tab.url), error);
+      console.warn(t("skippedBookmarkWarning", tab.archiveUrl), error);
     }
   }
 
@@ -577,7 +579,8 @@ function getStaleTabs(tabs, thresholdMinutes) {
   const cutoff = Date.now() - thresholdMinutes * 60 * 1000;
 
   return sortTabs(tabs).filter((tab) => {
-    if (!Number.isInteger(tab.id) || !tab.url || !Number.isFinite(tab.lastAccessed)) {
+    const url = getTabUrl(tab);
+    if (!Number.isInteger(tab.id) || !url) {
       return false;
     }
 
@@ -585,12 +588,28 @@ function getStaleTabs(tabs, thresholdMinutes) {
       return false;
     }
 
-    if (!isAutoCleanupUrl(tab.url)) {
+    if (!isAutoCleanupUrl(url)) {
+      return false;
+    }
+
+    if (isUnloadedTab(tab)) {
+      return true;
+    }
+
+    if (!Number.isFinite(tab.lastAccessed)) {
       return false;
     }
 
     return tab.lastAccessed <= cutoff;
   });
+}
+
+function getTabUrl(tab) {
+  return tab?.url || tab?.pendingUrl || "";
+}
+
+function isUnloadedTab(tab) {
+  return Boolean(tab?.discarded) || tab?.status === "unloaded";
 }
 
 function isAutoCleanupUrl(url) {
@@ -1008,10 +1027,11 @@ function getBookmarkTitle(tab) {
     return title;
   }
 
+  const url = getTabUrl(tab);
   try {
-    return new URL(tab.url).hostname || tab.url;
+    return new URL(url).hostname || url;
   } catch {
-    return tab.url;
+    return url;
   }
 }
 
