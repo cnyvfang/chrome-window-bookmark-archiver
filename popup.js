@@ -23,11 +23,14 @@ const FALLBACK_MESSAGES = {
   autoCleanupDisabledStatus: "Automatic cleanup is off.",
   autoCleanupEnabledStatus: "Automatic cleanup is on.",
   autoCleanupIntervalLabel: "Check every",
+  autoCleanupDuplicatesClosedStatus: "Automatic cleanup closed $1 tabs that were already saved.",
   autoCleanupNoBookmarkableStatus: "Found $1 stale tabs, but none could be archived.",
   autoCleanupNothingStatus: "No stale tabs matched the current rule.",
   autoCleanupProtectionNote: "Pinned, active, audible, incognito, and internal Chrome tabs are protected. Discarded or unloaded tabs are eligible for cleanup.",
   autoCleanupRunningStatus: "Running automatic cleanup...",
   autoCleanupSavedAndClosedStatus: "Automatic cleanup saved $1 pages and closed $2 tabs.",
+  autoCleanupSavedDuplicatesAndClosedStatus: "Automatic cleanup saved $1 pages, skipped $2 duplicates, and closed $3 tabs.",
+  autoCleanupSavedDuplicatesStatus: "Automatic cleanup saved $1 pages and skipped $2 duplicates.",
   autoCleanupSavedStatus: "Automatic cleanup saved $1 pages.",
   autoCleanupSavingStatus: "Saving automatic cleanup settings...",
   autoCleanupSettingsSavedStatus: "Automatic cleanup settings saved.",
@@ -39,6 +42,7 @@ const FALLBACK_MESSAGES = {
   backupCloseHint: "Save tabs in the selected close range, then close them",
   backupOnlyButton: "Backup only",
   backupOnlyHint: "Save tabs without closing them",
+  dedupeArchiveFoldersButton: "Deduplicate",
   durationOneDay: "1 day",
   durationOneHour: "1 hour",
   durationSixHours: "6 hours",
@@ -51,7 +55,7 @@ const FALLBACK_MESSAGES = {
   intervalSixHours: "6 hours",
   intervalTwelveHours: "12 hours",
   lastAutoCleanupLabel: "Last automatic cleanup",
-  lastAutoCleanupSummary: "Matched $4 stale tabs. Saved $1, closed $2, skipped $3.",
+  lastAutoCleanupSummary: "Matched $4 stale tabs. Saved $1, duplicates $5, closed $2, skipped $3.",
   lastBackupLabel: "Last backup",
   lastBackupNever: "Never",
   manualCleanupScopeAll: "All tabs",
@@ -72,6 +76,11 @@ const FALLBACK_MESSAGES = {
   savedArchiveFolderLabel: "Saved folder",
   statusArchiving: "Archiving...",
   statusArchiveSettingsSaved: "Archive folder mode saved.",
+  statusDedupingArchiveFolders: "Removing duplicate saved pages...",
+  statusDedupeComplete: "Removed $1 duplicate pages.",
+  statusDedupeNothing: "No duplicate saved pages found.",
+  statusDuplicatesOnly: "$1 pages were already saved.",
+  statusDuplicatesOnlyAndClosed: "$1 pages were already saved; closed $2 tabs.",
   statusFailed: "Backup failed.",
   statusMergeComplete: "Merged $1 folders and moved $2 pages.",
   statusMergeNothing: "No dated archive folders to merge.",
@@ -85,6 +94,8 @@ const FALLBACK_MESSAGES = {
   statusReady: "Choose an action.",
   statusSaved: "Saved $1 pages.",
   statusSavedAndClosed: "Saved $1 pages and closed $2 tabs.",
+  statusSavedWithDuplicates: "Saved $1 pages and skipped $2 duplicates.",
+  statusSavedWithDuplicatesAndClosed: "Saved $1 pages, skipped $2 duplicates, and closed $3 tabs.",
   statusSavedWithSkipped: "Saved $1 pages and skipped $2 pages.",
   statusSavedWithSkippedAndClosed: "Saved $1 pages, skipped $2 pages, and closed $3 tabs."
 };
@@ -123,6 +134,7 @@ function cacheElements() {
   elements.autoCleanupThreshold = document.getElementById("autoCleanupThreshold");
   elements.backupOnlyButton = document.getElementById("backupOnlyButton");
   elements.backupCloseButton = document.getElementById("backupCloseButton");
+  elements.dedupeArchiveFoldersButton = document.getElementById("dedupeArchiveFoldersButton");
   elements.lastAutoCleanupSummary = document.getElementById("lastAutoCleanupSummary");
   elements.lastAutoCleanupTime = document.getElementById("lastAutoCleanupTime");
   elements.lastBackupTime = document.getElementById("lastBackupTime");
@@ -138,6 +150,7 @@ function bindEvents() {
   elements.archiveFolderMode.addEventListener("change", saveArchiveSettings);
   elements.backupOnlyButton.addEventListener("click", () => runBackup(false));
   elements.backupCloseButton.addEventListener("click", () => runBackup(true));
+  elements.dedupeArchiveFoldersButton.addEventListener("click", dedupeArchiveFolders);
   elements.manualCleanupScope.addEventListener("change", saveManualCleanupScope);
   elements.mergeArchiveFoldersButton.addEventListener("click", mergeArchiveFolders);
   elements.openArchiveFolderButton.addEventListener("click", openSavedArchiveFolder);
@@ -229,6 +242,7 @@ function renderArchiveFolderControls() {
   elements.savedArchiveFolder.disabled = isBusy || !hasFolders;
   elements.openArchiveFolderButton.disabled = isBusy || !hasFolders;
   elements.mergeArchiveFoldersButton.disabled = isBusy || !hasDatedFolders;
+  elements.dedupeArchiveFoldersButton.disabled = isBusy || !hasFolders;
 }
 
 function formatArchiveFolderOption(folder) {
@@ -316,6 +330,25 @@ async function mergeArchiveFolders() {
 
     await loadArchiveState();
     setStatus(getMergeStatus(response.result), "success");
+  } catch (error) {
+    setStatus(error?.message || t("statusFailed"), "error");
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function dedupeArchiveFolders() {
+  setBusy(true);
+  setStatus(t("statusDedupingArchiveFolders"));
+
+  try {
+    const response = await sendMessage({ type: "dedupe-archive-folders" });
+    if (!response?.ok) {
+      throw new Error(response?.error || t("statusFailed"));
+    }
+
+    await loadArchiveState();
+    setStatus(getDedupeStatus(response.result), "success");
   } catch (error) {
     setStatus(error?.message || t("statusFailed"), "error");
   } finally {
@@ -463,7 +496,8 @@ function renderAutoCleanupSummary(result) {
     String(result.savedCount || 0),
     String(result.closedCount || 0),
     String(result.skippedCount || 0),
-    String(result.staleCount || 0)
+    String(result.staleCount || 0),
+    String(result.duplicateCount || 0)
   ]);
 }
 
@@ -590,6 +624,19 @@ function getSuccessStatus(result) {
   const savedCount = String(result.savedCount || 0);
   const skippedCount = String(result.skippedCount || 0);
   const closedCount = String(result.closedCount || 0);
+  const duplicateCount = String(result.duplicateCount || 0);
+
+  if (result.closedCount > 0 && result.savedCount === 0 && result.duplicateCount > 0) {
+    return t("statusDuplicatesOnlyAndClosed", [duplicateCount, closedCount]);
+  }
+
+  if (result.savedCount === 0 && result.duplicateCount > 0) {
+    return t("statusDuplicatesOnly", duplicateCount);
+  }
+
+  if (result.closedCount > 0 && result.duplicateCount > 0) {
+    return t("statusSavedWithDuplicatesAndClosed", [savedCount, duplicateCount, closedCount]);
+  }
 
   if (result.closedCount > 0 && result.skippedCount > 0) {
     return t("statusSavedWithSkippedAndClosed", [savedCount, skippedCount, closedCount]);
@@ -603,6 +650,10 @@ function getSuccessStatus(result) {
     return t("statusSavedWithSkipped", [savedCount, skippedCount]);
   }
 
+  if (result.duplicateCount > 0) {
+    return t("statusSavedWithDuplicates", [savedCount, duplicateCount]);
+  }
+
   return t("statusSaved", savedCount);
 }
 
@@ -611,10 +662,29 @@ function getAutoCleanupStatus(result) {
     return t("autoCleanupNothingStatus");
   }
 
+  if (result.savedCount > 0 && result.duplicateCount > 0 && result.closedCount > 0) {
+    return t("autoCleanupSavedDuplicatesAndClosedStatus", [
+      String(result.savedCount),
+      String(result.duplicateCount),
+      String(result.closedCount)
+    ]);
+  }
+
+  if (result.savedCount === 0 && result.duplicateCount > 0 && result.closedCount > 0) {
+    return t("autoCleanupDuplicatesClosedStatus", String(result.closedCount));
+  }
+
   if (result.savedCount > 0 && result.closedCount > 0) {
     return t("autoCleanupSavedAndClosedStatus", [
       String(result.savedCount),
       String(result.closedCount)
+    ]);
+  }
+
+  if (result.savedCount > 0 && result.duplicateCount > 0) {
+    return t("autoCleanupSavedDuplicatesStatus", [
+      String(result.savedCount),
+      String(result.duplicateCount)
     ]);
   }
 
@@ -636,6 +706,14 @@ function getMergeStatus(result) {
   ]);
 }
 
+function getDedupeStatus(result) {
+  if (!result?.duplicateCount) {
+    return t("statusDedupeNothing");
+  }
+
+  return t("statusDedupeComplete", String(result.duplicateCount));
+}
+
 function getOpenFolderStatus(result) {
   return t("statusOpenFolderComplete", String(result?.openedCount || 0));
 }
@@ -646,6 +724,7 @@ function setBusy(nextBusy) {
   elements.backupCloseButton.disabled = isBusy;
   elements.manualCleanupScope.disabled = isBusy;
   elements.runAutoCleanupButton.disabled = isBusy;
+  elements.dedupeArchiveFoldersButton.disabled = isBusy;
   renderArchiveFolderControls();
 }
 

@@ -11,13 +11,13 @@
 <p align="center">
   <a href="README.md">English</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.5.2.zip">下载 ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.5.3.zip">下载 ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.5.2-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.5.3-111827">
 </p>
 
 ## 功能简介
@@ -35,6 +35,7 @@
 - 手动备份并关闭可以选择关闭全部标签页，或只关闭 1 小时到 30 天未访问的标签页。
 - 支持把已有时间戳归档文件夹合并到固定归档文件夹。
 - 支持从保存的归档文件夹中读取并在当前窗口打开全部页面。
+- 支持对已保存归档书签去重，并在后续备份时自动跳过重复 URL。
 - 弹窗中显示上一次成功备份时间。
 - 可选定时清理 1 小时到 30 天未访问的标签页。
 - 显示上一次自动清理时间和结果摘要。
@@ -45,7 +46,7 @@
 
 ## 本地安装
 
-1. 下载 [chrome-window-bookmark-archiver-1.5.2.zip](chrome-window-bookmark-archiver-1.5.2.zip)。
+1. 下载 [chrome-window-bookmark-archiver-1.5.3.zip](chrome-window-bookmark-archiver-1.5.3.zip)。
 2. 解压该文件。
 3. 打开 Chrome，进入 `chrome://extensions/`。
 4. 打开右上角的 **开发者模式**。
@@ -66,9 +67,13 @@
 
 使用 **合并时间组**，可以把已有时间戳归档文件夹移动到固定归档文件夹中。
 
+使用 **去重**，可以移除扩展归档文件夹中的重复保存页面。扩展会保留第一次找到的 URL，删除后续重复项，不会处理这些归档文件夹以外的普通书签。
+
 选择 **保存的文件夹** 后，使用 **打开文件夹**，会把该文件夹里的全部页面打开到当前窗口。
 
 先选择 **备份并关闭范围**，再选择 **备份并关闭标签页**。
+
+新的备份会先检查已有归档文件夹。如果页面 URL 已经保存过，扩展会跳过重复书签；如果是清理关闭操作，该标签页仍会被视为已经安全备份，可以被关闭。
 
 如果范围是 **全部标签页**，扩展会保存当前窗口标签页，打开一个新标签页，然后关闭该窗口原有标签页。
 
@@ -113,7 +118,7 @@
 chrome-window-bookmark-archiver/
 +-- assets/              扩展 logo 和 Chrome 图标尺寸
 +-- _locales/            英文和中文 i18n 文案
-+-- chrome-window-bookmark-archiver-1.5.2.zip
++-- chrome-window-bookmark-archiver-1.5.3.zip
 |                       本地安装 ZIP 包
 +-- background.js        书签备份和关闭标签页逻辑
 +-- popup.html           扩展弹窗结构
@@ -135,6 +140,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.2.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.3.zip
 rm -rf "$staging"
 ```

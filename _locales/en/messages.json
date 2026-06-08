@@ -318,7 +318,7 @@
     "description": "Last automatic cleanup time label"
   },
   "lastAutoCleanupSummary": {
-    "message": "Matched $STALE$ stale tabs. Saved $SAVED$, closed $CLOSED$, skipped $SKIPPED$.",
+    "message": "Matched $STALE$ stale tabs. Saved $SAVED$, duplicates $DUPLICATES$, closed $CLOSED$, skipped $SKIPPED$.",
     "description": "Last automatic cleanup result summary",
     "placeholders": {
       "saved": {
@@ -332,6 +332,9 @@
       },
       "stale": {
         "content": "$4"
+      },
+      "duplicates": {
+        "content": "$5"
       }
     }
   },
@@ -505,5 +508,158 @@
   "statusNothingToBackup": {
     "message": "There are no pages to back up in this window.",
     "description": "No pages to back up status"
+  },
+  "duplicatesOnlyTitle": {
+    "message": "$DUPLICATES$ pages were already saved.",
+    "description": "Action title when all pages were duplicate archived pages",
+    "placeholders": {
+      "duplicates": {
+        "content": "$1"
+      }
+    }
+  },
+  "duplicatesOnlyAndClosedTitle": {
+    "message": "$DUPLICATES$ pages were already saved, and $CLOSED$ tabs were closed.",
+    "description": "Action title when duplicate archived pages were closed",
+    "placeholders": {
+      "duplicates": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "savedWithDuplicatesTitle": {
+    "message": "Saved $COUNT$ pages and skipped $DUPLICATES$ duplicates.",
+    "description": "Success status title with duplicate pages skipped",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      }
+    }
+  },
+  "savedWithDuplicatesAndClosedTitle": {
+    "message": "Saved $COUNT$ pages, skipped $DUPLICATES$ duplicates, and closed $CLOSED$ tabs.",
+    "description": "Success and close status title with duplicate pages skipped",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
+  },
+  "dedupeArchiveFoldersButton": {
+    "message": "Deduplicate",
+    "description": "Deduplicate saved archive folders button"
+  },
+  "autoCleanupDuplicatesClosedStatus": {
+    "message": "Automatic cleanup closed $COUNT$ tabs that were already saved.",
+    "description": "Automatic cleanup closed duplicate archived tabs status",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "autoCleanupSavedDuplicatesAndClosedStatus": {
+    "message": "Automatic cleanup saved $SAVED$ pages, skipped $DUPLICATES$ duplicates, and closed $CLOSED$ tabs.",
+    "description": "Automatic cleanup saved duplicate and closed status",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
+  },
+  "autoCleanupSavedDuplicatesStatus": {
+    "message": "Automatic cleanup saved $SAVED$ pages and skipped $DUPLICATES$ duplicates.",
+    "description": "Automatic cleanup saved duplicate status",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusDedupingArchiveFolders": {
+    "message": "Removing duplicate saved pages...",
+    "description": "Archive dedupe running status"
+  },
+  "statusDedupeComplete": {
+    "message": "Removed $COUNT$ duplicate pages.",
+    "description": "Archive dedupe complete status",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusDedupeNothing": {
+    "message": "No duplicate saved pages found.",
+    "description": "Archive dedupe no duplicate status"
+  },
+  "statusDuplicatesOnly": {
+    "message": "$COUNT$ pages were already saved.",
+    "description": "Popup status when all pages were duplicate archived pages",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusDuplicatesOnlyAndClosed": {
+    "message": "$COUNT$ pages were already saved; closed $CLOSED$ tabs.",
+    "description": "Popup status when duplicate archived pages were closed",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusSavedWithDuplicates": {
+    "message": "Saved $SAVED$ pages and skipped $DUPLICATES$ duplicates.",
+    "description": "Popup success status with duplicates skipped",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusSavedWithDuplicatesAndClosed": {
+    "message": "Saved $SAVED$ pages, skipped $DUPLICATES$ duplicates, and closed $CLOSED$ tabs.",
+    "description": "Popup success and close status with duplicates skipped",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
   }
 }

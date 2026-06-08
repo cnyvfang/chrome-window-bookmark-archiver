@@ -37,8 +37,12 @@ const FALLBACK_MESSAGES = {
   localFilesFolder: "本地文件",
   manualCleanupNoMatchTitle: "没有符合所选清理范围的标签页。",
   otherFolder: "其他",
+  duplicatesOnlyTitle: "$DUPLICATES$ 个页面此前已收藏。",
+  duplicatesOnlyAndClosedTitle: "$DUPLICATES$ 个页面此前已收藏，已关闭 $CLOSED$ 个标签页。",
   savedTitle: "已收藏 $COUNT$ 个页面。",
   savedAndClosedTitle: "已收藏 $COUNT$ 个页面，已关闭 $CLOSED$ 个标签页。",
+  savedWithDuplicatesTitle: "已收藏 $COUNT$ 个页面，跳过 $DUPLICATES$ 个重复页面。",
+  savedWithDuplicatesAndClosedTitle: "已收藏 $COUNT$ 个页面，跳过 $DUPLICATES$ 个重复页面，已关闭 $CLOSED$ 个标签页。",
   savedWithSkippedTitle: "已收藏 $COUNT$ 个页面，跳过 $SKIPPED$ 个页面。",
   savedWithSkippedAndClosedTitle: "已收藏 $COUNT$ 个页面，跳过 $SKIPPED$ 个页面，已关闭 $CLOSED$ 个标签页。",
   skippedBookmarkWarning: "无法收藏页面：$URL$",
@@ -131,6 +135,19 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "dedupe-archive-folders") {
+    dedupeArchiveFolders().then((result) => {
+      sendResponse({ ok: true, result });
+    }).catch((error) => {
+      sendResponse({
+        ok: false,
+        error: error?.message || String(error)
+      });
+    });
+
+    return true;
+  }
+
   if (message?.type === "open-archive-folder") {
     openArchiveFolder({
       folderId: message.folderId,
@@ -211,7 +228,7 @@ async function archiveCurrentWindow(options = {}) {
     topFolderPrefixMessageName: "topFolderPrefix"
   });
 
-  if (archiveResult.savedCount === 0 && archiveResult.skippedCount === 0) {
+  if (archiveResult.savedCount === 0 && archiveResult.duplicateCount === 0 && archiveResult.skippedCount === 0) {
     const emptyTitle = closeOriginalTabs && closeThresholdMinutes !== null
       ? t("manualCleanupNoMatchTitle")
       : t("emptyWindowTitle");
@@ -232,8 +249,14 @@ async function archiveCurrentWindow(options = {}) {
     closedCount = await removeTabsSafely(archiveResult.savedTabIds);
   }
 
-  const resultTitle = getResultTitle(archiveResult.savedCount, archiveResult.skippedCount, closedCount);
-  setActionFeedback(String(archiveResult.savedCount), archiveResult.skippedCount ? "#f29900" : "#137333", resultTitle);
+  const resultTitle = getResultTitle(
+    archiveResult.savedCount,
+    archiveResult.skippedCount,
+    closedCount,
+    archiveResult.duplicateCount
+  );
+  const handledCount = archiveResult.savedCount + archiveResult.duplicateCount;
+  setActionFeedback(String(handledCount), archiveResult.skippedCount ? "#f29900" : "#137333", resultTitle);
 
   return {
     ...archiveResult,
@@ -258,8 +281,45 @@ async function archiveTabs(tabs, options = {}) {
   if (bookmarkableTabs.length === 0) {
     return {
       lastBackupAt: null,
+      duplicateCount: 0,
       savedCount: 0,
       savedTabIds: [],
+      skippedCount: 0,
+      topFolderId: null,
+      topFolderTitle: null
+    };
+  }
+
+  const existingUrls = await collectArchiveUrlSet();
+  const duplicateTabIds = [];
+  let duplicateCount = 0;
+  const tabsToSave = [];
+
+  for (const tab of bookmarkableTabs) {
+    const normalizedUrl = normalizeBookmarkUrl(tab.archiveUrl);
+    if (existingUrls.has(normalizedUrl)) {
+      duplicateCount += 1;
+      if (Number.isInteger(tab.id)) {
+        duplicateTabIds.push(tab.id);
+      }
+      continue;
+    }
+
+    existingUrls.add(normalizedUrl);
+    tabsToSave.push({ ...tab, normalizedUrl });
+  }
+
+  if (tabsToSave.length === 0) {
+    const lastBackupAt = duplicateCount > 0 ? Date.now() : null;
+    if (recordLastBackup && lastBackupAt !== null) {
+      await setStorage({ [STORAGE_KEYS.lastBackupAt]: lastBackupAt });
+    }
+
+    return {
+      lastBackupAt,
+      duplicateCount,
+      savedCount: 0,
+      savedTabIds: duplicateTabIds,
       skippedCount: 0,
       topFolderId: null,
       topFolderTitle: null
@@ -283,7 +343,7 @@ async function archiveTabs(tabs, options = {}) {
   const skipped = [];
   let savedCount = 0;
 
-  for (const tab of bookmarkableTabs) {
+  for (const tab of tabsToSave) {
     const siteName = getSiteFolderName(tab.archiveUrl);
 
     if (!foldersBySite.has(siteName)) {
@@ -311,15 +371,16 @@ async function archiveTabs(tabs, options = {}) {
     }
   }
 
-  const lastBackupAt = savedCount > 0 ? Date.now() : null;
+  const lastBackupAt = savedCount > 0 || duplicateCount > 0 ? Date.now() : null;
   if (recordLastBackup && lastBackupAt !== null) {
     await setStorage({ [STORAGE_KEYS.lastBackupAt]: lastBackupAt });
   }
 
   return {
     lastBackupAt,
+    duplicateCount,
     savedCount,
-    savedTabIds,
+    savedTabIds: [...savedTabIds, ...duplicateTabIds],
     skippedCount: skipped.length,
     topFolderId: topFolder.id,
     topFolderTitle: topFolder.title
@@ -443,6 +504,106 @@ async function mergeArchiveFolders() {
   return result;
 }
 
+async function dedupeArchiveFolders() {
+  const archiveFolders = await getArchiveFolderSubTrees();
+  const seenUrls = new Set();
+  const duplicateBookmarkIds = [];
+
+  for (const folder of archiveFolders) {
+    collectDuplicateBookmarkIds(folder, seenUrls, duplicateBookmarkIds);
+  }
+
+  for (const bookmarkId of duplicateBookmarkIds) {
+    await removeBookmark(bookmarkId);
+  }
+
+  let removedEmptyFolderCount = 0;
+  for (const folder of archiveFolders) {
+    removedEmptyFolderCount += await removeEmptyFolders(folder.id, { preserveRoot: false });
+  }
+
+  return {
+    duplicateCount: duplicateBookmarkIds.length,
+    removedEmptyFolderCount
+  };
+}
+
+async function collectArchiveUrlSet() {
+  const archiveFolders = await getArchiveFolderSubTrees();
+  const urls = new Set();
+
+  archiveFolders.forEach((folder) => {
+    collectBookmarkUrlSet(folder, urls);
+  });
+
+  return urls;
+}
+
+async function getArchiveFolderSubTrees() {
+  const parentId = await findBookmarksBarId();
+  const children = await getBookmarkChildren(parentId);
+  const archiveFolderIds = children
+    .filter((node) => !node.url && getArchiveFolderInfo(node.title))
+    .map((node) => node.id);
+
+  const folders = [];
+  for (const folderId of archiveFolderIds) {
+    const [folder] = await getBookmarkSubTree(folderId);
+    if (folder) {
+      folders.push(folder);
+    }
+  }
+
+  return folders;
+}
+
+function collectDuplicateBookmarkIds(node, seenUrls, duplicateBookmarkIds) {
+  if (node.url) {
+    const normalizedUrl = normalizeBookmarkUrl(node.url);
+    if (seenUrls.has(normalizedUrl)) {
+      duplicateBookmarkIds.push(node.id);
+    } else {
+      seenUrls.add(normalizedUrl);
+    }
+    return;
+  }
+
+  (node.children || []).forEach((child) => {
+    collectDuplicateBookmarkIds(child, seenUrls, duplicateBookmarkIds);
+  });
+}
+
+function collectBookmarkUrlSet(node, urls) {
+  if (node.url) {
+    urls.add(normalizeBookmarkUrl(node.url));
+    return;
+  }
+
+  (node.children || []).forEach((child) => {
+    collectBookmarkUrlSet(child, urls);
+  });
+}
+
+async function removeEmptyFolders(folderId, options = {}) {
+  const { preserveRoot = false } = options;
+  let removedCount = 0;
+  const children = await getBookmarkChildren(folderId);
+
+  for (const child of children) {
+    if (!child.url) {
+      removedCount += await removeEmptyFolders(child.id, { preserveRoot: false });
+    }
+  }
+
+  const freshChildren = await getBookmarkChildren(folderId);
+  if (!preserveRoot && freshChildren.length === 0) {
+    await removeBookmarkTree(folderId);
+    removedCount += 1;
+  }
+
+  return removedCount;
+}
+
 async function mergeArchiveFolderIntoTarget(sourceFolder, targetFolderId) {
   let movedUrlCount = 0;
 
@@ -527,6 +688,7 @@ async function runAutoCleanup(options = {}) {
   if (!settings.enabled && !force) {
     return {
       closedCount: 0,
+      duplicateCount: 0,
       enabled: false,
       lastAutoCleanupAt: null,
       savedCount: 0,
@@ -553,6 +715,7 @@ async function runAutoCleanup(options = {}) {
     closedCount,
     intervalMinutes: settings.intervalMinutes,
     lastAutoCleanupAt,
+    duplicateCount: archiveResult.duplicateCount,
     savedCount: archiveResult.savedCount,
     skippedCount: archiveResult.skippedCount,
     staleCount: staleTabs.length,
@@ -568,7 +731,7 @@ async function runAutoCleanup(options = {}) {
     setActionFeedback(
       String(closedCount),
       "#137333",
-      t("autoCleanupCompletedTitle", [String(archiveResult.savedCount), String(closedCount)])
+      t("autoCleanupCompletedTitle", [String(archiveResult.savedCount + archiveResult.duplicateCount), String(closedCount)])
     );
   }
 
@@ -606,6 +769,19 @@ function getStaleTabs(tabs, thresholdMinutes) {
 
 function getTabUrl(tab) {
   return tab?.url || tab?.pendingUrl || "";
+}
+
+function normalizeBookmarkUrl(url) {
+  const trimmed = String(url || "").trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  try {
+    return new URL(trimmed).href;
+  } catch {
+    return trimmed;
+  }
 }
 
 function isUnloadedTab(tab) {
@@ -884,6 +1060,19 @@ function moveBookmark(id, destination) {
   });
 }
 
+function removeBookmark(id) {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.remove(id, () => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
 function removeBookmarkTree(id) {
   return new Promise((resolve, reject) => {
     chrome.bookmarks.removeTree(id, () => {
@@ -1134,7 +1323,26 @@ function setActionFeedback(text, color, title) {
   chrome.action.setTitle({ title });
 }
 
-function getResultTitle(savedCount, skippedCount, closedCount) {
+function getResultTitle(savedCount, skippedCount, closedCount, duplicateCount = 0) {
+  if (closedCount > 0 && savedCount === 0 && duplicateCount > 0) {
+    return t("duplicatesOnlyAndClosedTitle", [
+      String(duplicateCount),
+      String(closedCount)
+    ]);
+  }
+
+  if (savedCount === 0 && duplicateCount > 0) {
+    return t("duplicatesOnlyTitle", String(duplicateCount));
+  }
+
+  if (closedCount > 0 && duplicateCount > 0) {
+    return t("savedWithDuplicatesAndClosedTitle", [
+      String(savedCount),
+      String(duplicateCount),
+      String(closedCount)
+    ]);
+  }
+
   if (closedCount > 0 && skippedCount > 0) {
     return t("savedWithSkippedAndClosedTitle", [
       String(savedCount),
@@ -1147,6 +1355,13 @@ function getResultTitle(savedCount, skippedCount, closedCount) {
     return t("savedAndClosedTitle", [
       String(savedCount),
       String(closedCount)
+    ]);
+  }
+
+  if (duplicateCount > 0) {
+    return t("savedWithDuplicatesTitle", [
+      String(savedCount),
+      String(duplicateCount)
     ]);
   }
 
@@ -1166,10 +1381,12 @@ function t(messageName, substitutions) {
 
   if (substitutions !== undefined) {
     const values = Array.isArray(substitutions) ? substitutions : [substitutions];
+    const duplicateValue = values.length > 2 ? values[1] : values[0];
     const closedValue = values.length > 2 ? values[2] : values[1];
     fallback = fallback
       .replaceAll("$COUNT$", values[0] || "")
       .replaceAll("$SKIPPED$", values[1] || "")
+      .replaceAll("$DUPLICATES$", duplicateValue || "")
       .replaceAll("$CLOSED$", closedValue || "")
       .replaceAll("$URL$", values[0] || "");
   }

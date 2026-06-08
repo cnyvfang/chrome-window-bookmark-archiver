@@ -11,13 +11,13 @@
 <p align="center">
   <a href="README.zh-CN.md">简体中文</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.5.2.zip">Download ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.5.3.zip">Download ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.5.2-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.5.3-111827">
 </p>
 
 ## What It Does
@@ -35,6 +35,7 @@ It can also run scheduled cleanup for stale tabs. When enabled, it archives tabs
 - Manual backup-and-close can close all tabs or only tabs inactive for 1 hour to 30 days.
 - Merges existing timestamped archive folders into fixed archive folders.
 - Opens every saved page from an archive folder back into the current window.
+- Deduplicates saved archive bookmarks and automatically skips duplicate URLs during future backups.
 - Shows the last successful backup time in the popup.
 - Optional scheduled cleanup for tabs that have not been accessed for 1 hour to 30 days.
 - Shows the last automatic cleanup time and result summary.
@@ -45,7 +46,7 @@ It can also run scheduled cleanup for stale tabs. When enabled, it archives tabs
 
 ## Install Locally
 
-1. Download [chrome-window-bookmark-archiver-1.5.2.zip](chrome-window-bookmark-archiver-1.5.2.zip).
+1. Download [chrome-window-bookmark-archiver-1.5.3.zip](chrome-window-bookmark-archiver-1.5.3.zip).
 2. Unzip the file.
 3. Open Chrome and go to `chrome://extensions/`.
 4. Turn on **Developer mode**.
@@ -66,9 +67,13 @@ Set **Folder mode** to **Single folder** to keep adding pages into one fixed arc
 
 Use **Merge dated folders** to move existing timestamped archive folders into fixed archive folders.
 
+Use **Deduplicate** to remove duplicate saved pages from the extension's archive folders. The extension keeps the first matching URL it finds and removes later duplicates. It does not touch ordinary bookmarks outside these archive folders.
+
 Choose a **Saved folder**, then use **Open folder** to open all saved pages from that folder in the current window.
 
 Choose a **Backup and close range**, then choose **Backup and close tabs**.
+
+New backups automatically check the existing archive folders before creating bookmarks. If a page URL has already been saved, the extension skips the duplicate bookmark; for cleanup actions, that tab is still considered safe to close because it is already archived.
 
 If the range is **All tabs**, the extension saves the current window tabs, opens a new tab, and closes the original tabs in that window.
 
@@ -113,7 +118,7 @@ The last successful backup time, archive folder mode, manual close range, automa
 chrome-window-bookmark-archiver/
 +-- assets/              Extension logo and Chrome icon sizes
 +-- _locales/            English and Chinese i18n messages
-+-- chrome-window-bookmark-archiver-1.5.2.zip
++-- chrome-window-bookmark-archiver-1.5.3.zip
 |                       Local install ZIP package
 +-- background.js        Bookmark backup and tab closing logic
 +-- popup.html           Extension popup markup
@@ -135,6 +140,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.2.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.3.zip
 rm -rf "$staging"
 ```

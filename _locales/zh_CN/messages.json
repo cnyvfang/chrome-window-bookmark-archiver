@@ -318,7 +318,7 @@
     "description": "最近自动清理时间标签"
   },
   "lastAutoCleanupSummary": {
-    "message": "发现 $STALE$ 个过期标签页，已收藏 $SAVED$ 个，关闭 $CLOSED$ 个，跳过 $SKIPPED$ 个。",
+    "message": "发现 $STALE$ 个过期标签页，已收藏 $SAVED$ 个，重复 $DUPLICATES$ 个，关闭 $CLOSED$ 个，跳过 $SKIPPED$ 个。",
     "description": "上一次自动清理结果摘要",
     "placeholders": {
       "saved": {
@@ -332,6 +332,9 @@
       },
       "stale": {
         "content": "$4"
+      },
+      "duplicates": {
+        "content": "$5"
       }
     }
   },
@@ -505,5 +508,158 @@
   "statusNothingToBackup": {
     "message": "当前窗口没有可备份页面。",
     "description": "没有可备份页面状态"
+  },
+  "duplicatesOnlyTitle": {
+    "message": "$DUPLICATES$ 个页面此前已收藏。",
+    "description": "全部页面都是重复归档页面时的按钮标题",
+    "placeholders": {
+      "duplicates": {
+        "content": "$1"
+      }
+    }
+  },
+  "duplicatesOnlyAndClosedTitle": {
+    "message": "$DUPLICATES$ 个页面此前已收藏，已关闭 $CLOSED$ 个标签页。",
+    "description": "重复归档页面被关闭时的按钮标题",
+    "placeholders": {
+      "duplicates": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "savedWithDuplicatesTitle": {
+    "message": "已收藏 $COUNT$ 个页面，跳过 $DUPLICATES$ 个重复页面。",
+    "description": "跳过重复页面的成功提示",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      }
+    }
+  },
+  "savedWithDuplicatesAndClosedTitle": {
+    "message": "已收藏 $COUNT$ 个页面，跳过 $DUPLICATES$ 个重复页面，已关闭 $CLOSED$ 个标签页。",
+    "description": "跳过重复页面并关闭标签页的成功提示",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
+  },
+  "dedupeArchiveFoldersButton": {
+    "message": "去重",
+    "description": "归档文件夹去重按钮"
+  },
+  "autoCleanupDuplicatesClosedStatus": {
+    "message": "自动清理已关闭 $COUNT$ 个此前已保存的标签页。",
+    "description": "自动清理关闭重复归档标签页状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "autoCleanupSavedDuplicatesAndClosedStatus": {
+    "message": "自动清理已收藏 $SAVED$ 个页面，跳过 $DUPLICATES$ 个重复页面，并关闭 $CLOSED$ 个标签页。",
+    "description": "自动清理收藏、跳过重复并关闭状态",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
+  },
+  "autoCleanupSavedDuplicatesStatus": {
+    "message": "自动清理已收藏 $SAVED$ 个页面，跳过 $DUPLICATES$ 个重复页面。",
+    "description": "自动清理收藏并跳过重复状态",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusDedupingArchiveFolders": {
+    "message": "正在移除重复保存页面...",
+    "description": "归档去重运行中状态"
+  },
+  "statusDedupeComplete": {
+    "message": "已移除 $COUNT$ 个重复页面。",
+    "description": "归档去重完成状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusDedupeNothing": {
+    "message": "没有发现重复保存页面。",
+    "description": "归档去重无重复状态"
+  },
+  "statusDuplicatesOnly": {
+    "message": "$COUNT$ 个页面此前已保存。",
+    "description": "全部页面都是重复归档页面时的弹窗状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "statusDuplicatesOnlyAndClosed": {
+    "message": "$COUNT$ 个页面此前已保存，已关闭 $CLOSED$ 个标签页。",
+    "description": "重复归档页面被关闭时的弹窗状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "closed": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusSavedWithDuplicates": {
+    "message": "已收藏 $SAVED$ 个页面，跳过 $DUPLICATES$ 个重复页面。",
+    "description": "跳过重复页面的弹窗成功状态",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusSavedWithDuplicatesAndClosed": {
+    "message": "已收藏 $SAVED$ 个页面，跳过 $DUPLICATES$ 个重复页面，已关闭 $CLOSED$ 个标签页。",
+    "description": "跳过重复页面并关闭标签页的弹窗成功状态",
+    "placeholders": {
+      "saved": {
+        "content": "$1"
+      },
+      "duplicates": {
+        "content": "$2"
+      },
+      "closed": {
+        "content": "$3"
+      }
+    }
   }
 }
