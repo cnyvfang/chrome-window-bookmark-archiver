@@ -17,6 +17,7 @@ const FALLBACK_MESSAGES = {
   archiveFolderModeLabel: "Folder mode",
   archiveFolderModeSingle: "Single folder",
   archiveFolderSummary: "$1 folders, $2 saved pages.",
+  archiveFolderSummaryFoldersOnly: "$1 folders.",
   archiveOptionsSubtitle: "Choose how bookmark folders are stored",
   archiveOptionsTitle: "Archive folders",
   autoCleanupDisabledStatus: "Automatic cleanup is off.",
@@ -92,16 +93,27 @@ const elements = {};
 let archiveFolders = [];
 let isBusy = false;
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+  initializePopup().catch((error) => {
+    console.error(error);
+    if (elements.status) {
+      setStatus(error?.message || t("statusFailed"), "error");
+    }
+  });
+});
+
+async function initializePopup() {
   cacheElements();
   localizeDocument();
   bindEvents();
 
-  await renderLastBackup();
+  await renderLastBackup().catch((error) => {
+    setStatus(error?.message || t("statusFailed"), "error");
+  });
   await loadArchiveState();
   await loadManualCleanupScope();
   await loadAutoCleanupState();
-});
+}
 
 function cacheElements() {
   elements.archiveFolderMode = document.getElementById("archiveFolderMode");
@@ -195,11 +207,17 @@ function renderArchiveFolderOptions() {
     }
   }
 
-  const urlCount = archiveFolders.reduce((count, folder) => count + (folder.urlCount || 0), 0);
-  elements.archiveFolderSummary.textContent = t("archiveFolderSummary", [
-    String(archiveFolders.length),
-    String(urlCount)
-  ]);
+  const countedFolders = archiveFolders.filter((folder) => Number.isFinite(folder.urlCount));
+  if (countedFolders.length === archiveFolders.length) {
+    const urlCount = archiveFolders.reduce((count, folder) => count + folder.urlCount, 0);
+    elements.archiveFolderSummary.textContent = t("archiveFolderSummary", [
+      String(archiveFolders.length),
+      String(urlCount)
+    ]);
+  } else {
+    elements.archiveFolderSummary.textContent = t("archiveFolderSummaryFoldersOnly", String(archiveFolders.length));
+  }
+
   renderArchiveFolderControls();
 }
 
@@ -215,7 +233,8 @@ function renderArchiveFolderControls() {
 
 function formatArchiveFolderOption(folder) {
   const datedPrefix = folder.isDated ? "* " : "";
-  return `${datedPrefix}${folder.title} (${folder.urlCount || 0})`;
+  const countSuffix = Number.isFinite(folder.urlCount) ? ` (${folder.urlCount})` : "";
+  return `${datedPrefix}${folder.title}${countSuffix}`;
 }
 
 async function loadAutoCleanupState() {

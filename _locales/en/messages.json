@@ -200,6 +200,15 @@
       }
     }
   },
+  "archiveFolderSummaryFoldersOnly": {
+    "message": "$FOLDERS$ folders.",
+    "description": "Archive folder summary shown when page counts are skipped for fast popup loading",
+    "placeholders": {
+      "folders": {
+        "content": "$1"
+      }
+    }
+  },
   "manualCleanupScopeLabel": {
     "message": "Backup and close range",
     "description": "Manual backup-and-close scope selector label"

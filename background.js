@@ -367,9 +367,8 @@ function normalizeArchiveSettings(settings) {
 }
 
 async function listArchiveFolders() {
-  const [root] = await getBookmarkTree();
-  const bookmarksBar = findBookmarksBarNode(root);
-  const children = bookmarksBar?.children || [];
+  const parentId = await findBookmarksBarId();
+  const children = await getBookmarkChildren(parentId);
   const folders = children
     .filter((node) => !node.url)
     .map((node) => {
@@ -383,7 +382,7 @@ async function listArchiveFolders() {
         id: node.id,
         isDated: info.isDated,
         title: node.title,
-        urlCount: countBookmarkUrls(node)
+        urlCount: null
       };
     })
     .filter(Boolean);
@@ -402,9 +401,8 @@ async function listArchiveFolders() {
 }
 
 async function mergeArchiveFolders() {
-  const [root] = await getBookmarkTree();
-  const bookmarksBar = findBookmarksBarNode(root);
-  const children = bookmarksBar?.children || [];
+  const parentId = await findBookmarksBarId();
+  const children = await getBookmarkChildren(parentId);
   const datedFolders = children
     .filter((node) => !node.url)
     .map((node) => ({ info: getArchiveFolderInfo(node.title), node }))
@@ -425,7 +423,6 @@ async function mergeArchiveFolders() {
       continue;
     }
 
-    const parentId = await findBookmarksBarId();
     const targetFolder = await findOrCreateArchiveSingleFolder(parentId, definition.messageName);
     result.targetFolderCount += 1;
 
@@ -911,18 +908,27 @@ async function openNewTabAndCloseTabs(originalTabs) {
 }
 
 async function findBookmarksBarId() {
-  const [root] = await getBookmarkTree();
-  const bookmarksBar = findBookmarksBarNode(root);
+  const rootChildren = await getBookmarkRootChildren();
+  const bookmarksBar = findBookmarksBarNode(rootChildren);
 
-  return bookmarksBar?.id || root.children?.[0]?.id || root.id;
+  return bookmarksBar?.id || rootChildren[0]?.id || "1";
 }
 
-function findBookmarksBarNode(root) {
-  const children = root.children || [];
+async function getBookmarkRootChildren() {
+  try {
+    return await getBookmarkChildren("0");
+  } catch {
+    const [root] = await getBookmarkTree();
+    return root.children || [];
+  }
+}
+
+function findBookmarksBarNode(rootOrChildren) {
+  const children = Array.isArray(rootOrChildren) ? rootOrChildren : rootOrChildren.children || [];
   return children.find((node) => {
     const title = node.title.toLowerCase();
     return title.includes("bookmarks bar") || title.includes("书签栏") || title.includes("收藏夹栏");
-  }) || children[0] || root;
+  }) || children[0] || null;
 }
 
 async function findOrCreateChildFolder(parentId, title) {
@@ -986,14 +992,6 @@ function getArchiveFolderInfo(title) {
 
 function getArchivePrefixTitles(definition) {
   return [...new Set([t(definition.messageName), ...definition.knownTitles])];
-}
-
-function countBookmarkUrls(node) {
-  if (node.url) {
-    return 1;
-  }
-
-  return (node.children || []).reduce((count, child) => count + countBookmarkUrls(child), 0);
 }
 
 function collectBookmarkUrls(node) {

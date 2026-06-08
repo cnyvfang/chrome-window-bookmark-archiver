@@ -200,6 +200,15 @@
       }
     }
   },
+  "archiveFolderSummaryFoldersOnly": {
+    "message": "$FOLDERS$ 个文件夹。",
+    "description": "快速打开弹窗时跳过页面数量统计后显示的归档文件夹摘要",
+    "placeholders": {
+      "folders": {
+        "content": "$1"
+      }
+    }
+  },
   "manualCleanupScopeLabel": {
     "message": "备份并关闭范围",
     "description": "手动备份并关闭范围选择标签"
