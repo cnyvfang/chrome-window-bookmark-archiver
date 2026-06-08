@@ -10,7 +10,7 @@
 
 body {
   margin: 0;
-  min-width: 352px;
+  min-width: 376px;
   color: #111827;
   background: #f8fafc;
 }
@@ -23,14 +23,14 @@ body {
 
 .header {
   display: grid;
-  grid-template-columns: 48px 1fr;
+  grid-template-columns: 56px 1fr;
   gap: 12px;
   align-items: center;
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
 }
 
 h1,
@@ -156,6 +156,12 @@ h1 {
   border: 1px solid #dbe3ef;
   border-radius: 8px;
   background: #ffffff;
+}
+
+.button-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .settings-header {

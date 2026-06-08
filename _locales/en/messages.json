@@ -152,6 +152,54 @@
     "message": "Save tabs in the selected close range, then close them",
     "description": "Backup-and-close button hint"
   },
+  "archiveOptionsTitle": {
+    "message": "Archive folders",
+    "description": "Archive folder management panel title"
+  },
+  "archiveOptionsSubtitle": {
+    "message": "Choose how bookmark folders are stored",
+    "description": "Archive folder management panel subtitle"
+  },
+  "archiveFolderModeLabel": {
+    "message": "Folder mode",
+    "description": "Archive folder mode selector label"
+  },
+  "archiveFolderModeDated": {
+    "message": "New dated folder",
+    "description": "Archive folder mode that creates a new timestamped folder"
+  },
+  "archiveFolderModeSingle": {
+    "message": "Single folder",
+    "description": "Archive folder mode that reuses one folder"
+  },
+  "savedArchiveFolderLabel": {
+    "message": "Saved folder",
+    "description": "Saved archive folder selector label"
+  },
+  "noSavedFoldersOption": {
+    "message": "No saved folders",
+    "description": "Saved folder selector empty state"
+  },
+  "mergeArchiveFoldersButton": {
+    "message": "Merge dated folders",
+    "description": "Merge archive folders button"
+  },
+  "openArchiveFolderButton": {
+    "message": "Open folder",
+    "description": "Open saved archive folder button"
+  },
+  "archiveFolderSummary": {
+    "message": "$FOLDERS$ folders, $PAGES$ saved pages.",
+    "description": "Archive folder summary",
+    "placeholders": {
+      "folders": {
+        "content": "$1"
+      },
+      "pages": {
+        "content": "$2"
+      }
+    }
+  },
   "manualCleanupScopeLabel": {
     "message": "Backup and close range",
     "description": "Manual backup-and-close scope selector label"
@@ -348,13 +396,54 @@
     "message": "Backup failed.",
     "description": "Failure popup status"
   },
+  "statusArchiveSettingsSaved": {
+    "message": "Archive folder mode saved.",
+    "description": "Archive folder mode saved status"
+  },
+  "statusMergingArchiveFolders": {
+    "message": "Merging archive folders...",
+    "description": "Archive folder merge in-progress status"
+  },
+  "statusMergeComplete": {
+    "message": "Merged $FOLDERS$ folders and moved $PAGES$ pages.",
+    "description": "Archive folder merge complete status",
+    "placeholders": {
+      "folders": {
+        "content": "$1"
+      },
+      "pages": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusMergeNothing": {
+    "message": "No dated archive folders to merge.",
+    "description": "Archive folder merge empty status"
+  },
   "statusManualCleanupNoMatch": {
     "message": "No tabs matched the selected cleanup range.",
     "description": "No tabs matched the manual cleanup range"
   },
+  "statusNoSavedFolder": {
+    "message": "No saved archive folder selected.",
+    "description": "No saved archive folder selected status"
+  },
   "statusNoWindow": {
     "message": "Could not find the current window.",
     "description": "No current window status"
+  },
+  "statusOpeningArchiveFolder": {
+    "message": "Opening saved folder...",
+    "description": "Opening saved archive folder status"
+  },
+  "statusOpenFolderComplete": {
+    "message": "Opened $COUNT$ pages from the saved folder.",
+    "description": "Opened saved archive folder status",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "statusSaved": {
     "message": "Saved $COUNT$ pages.",

@@ -152,6 +152,54 @@
     "message": "按所选范围保存标签页，然后关闭这些标签页",
     "description": "备份并关闭按钮说明"
   },
+  "archiveOptionsTitle": {
+    "message": "归档文件夹",
+    "description": "归档文件夹管理面板标题"
+  },
+  "archiveOptionsSubtitle": {
+    "message": "选择书签文件夹保存方式",
+    "description": "归档文件夹管理面板副标题"
+  },
+  "archiveFolderModeLabel": {
+    "message": "文件夹模式",
+    "description": "归档文件夹模式选择标签"
+  },
+  "archiveFolderModeDated": {
+    "message": "新建时间文件夹",
+    "description": "每次创建新时间戳文件夹的归档模式"
+  },
+  "archiveFolderModeSingle": {
+    "message": "固定文件夹",
+    "description": "复用一个固定文件夹的归档模式"
+  },
+  "savedArchiveFolderLabel": {
+    "message": "保存的文件夹",
+    "description": "保存的归档文件夹选择标签"
+  },
+  "noSavedFoldersOption": {
+    "message": "暂无保存的文件夹",
+    "description": "保存文件夹选择器空状态"
+  },
+  "mergeArchiveFoldersButton": {
+    "message": "合并时间组",
+    "description": "合并归档文件夹按钮"
+  },
+  "openArchiveFolderButton": {
+    "message": "打开文件夹",
+    "description": "打开保存的归档文件夹按钮"
+  },
+  "archiveFolderSummary": {
+    "message": "$FOLDERS$ 个文件夹，$PAGES$ 个已保存页面。",
+    "description": "归档文件夹摘要",
+    "placeholders": {
+      "folders": {
+        "content": "$1"
+      },
+      "pages": {
+        "content": "$2"
+      }
+    }
+  },
   "manualCleanupScopeLabel": {
     "message": "备份并关闭范围",
     "description": "手动备份并关闭范围选择标签"
@@ -348,13 +396,54 @@
     "message": "备份失败。",
     "description": "弹窗失败状态"
   },
+  "statusArchiveSettingsSaved": {
+    "message": "归档文件夹模式已保存。",
+    "description": "归档文件夹模式已保存状态"
+  },
+  "statusMergingArchiveFolders": {
+    "message": "正在合并归档文件夹...",
+    "description": "归档文件夹合并中状态"
+  },
+  "statusMergeComplete": {
+    "message": "已合并 $FOLDERS$ 个文件夹，移动 $PAGES$ 个页面。",
+    "description": "归档文件夹合并完成状态",
+    "placeholders": {
+      "folders": {
+        "content": "$1"
+      },
+      "pages": {
+        "content": "$2"
+      }
+    }
+  },
+  "statusMergeNothing": {
+    "message": "没有可合并的时间归档文件夹。",
+    "description": "没有可合并归档文件夹状态"
+  },
   "statusManualCleanupNoMatch": {
     "message": "没有符合所选清理范围的标签页。",
     "description": "没有符合手动清理范围的标签页状态"
   },
+  "statusNoSavedFolder": {
+    "message": "没有选择保存的归档文件夹。",
+    "description": "未选择保存归档文件夹状态"
+  },
   "statusNoWindow": {
     "message": "无法找到当前窗口。",
     "description": "无法识别窗口状态"
+  },
+  "statusOpeningArchiveFolder": {
+    "message": "正在打开保存的文件夹...",
+    "description": "打开保存归档文件夹中状态"
+  },
+  "statusOpenFolderComplete": {
+    "message": "已从保存的文件夹打开 $COUNT$ 个页面。",
+    "description": "打开保存归档文件夹完成状态",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "statusSaved": {
     "message": "已收藏 $COUNT$ 个页面。",

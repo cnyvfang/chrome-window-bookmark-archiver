@@ -4,6 +4,7 @@ const STORAGE_KEYS = {
 };
 
 const ALLOWED_MANUAL_CLEANUP_SCOPES = new Set(["all", "60", "360", "720", "1440", "4320", "10080", "43200"]);
+const ARCHIVE_FOLDER_MODES = new Set(["dated", "single"]);
 
 const DEFAULT_AUTO_CLEANUP_SETTINGS = {
   enabled: false,
@@ -12,6 +13,12 @@ const DEFAULT_AUTO_CLEANUP_SETTINGS = {
 };
 
 const FALLBACK_MESSAGES = {
+  archiveFolderModeDated: "New dated folder",
+  archiveFolderModeLabel: "Folder mode",
+  archiveFolderModeSingle: "Single folder",
+  archiveFolderSummary: "$1 folders, $2 saved pages.",
+  archiveOptionsSubtitle: "Choose how bookmark folders are stored",
+  archiveOptionsTitle: "Archive folders",
   autoCleanupDisabledStatus: "Automatic cleanup is off.",
   autoCleanupEnabledStatus: "Automatic cleanup is on.",
   autoCleanupIntervalLabel: "Check every",
@@ -57,12 +64,23 @@ const FALLBACK_MESSAGES = {
   manualCleanupScopeTwelveHours: "Tabs inactive for 12 hours",
   popupSubtitle: "Archive the current window",
   popupTitle: "Window Bookmark Archiver",
+  mergeArchiveFoldersButton: "Merge dated folders",
+  noSavedFoldersOption: "No saved folders",
+  openArchiveFolderButton: "Open folder",
   runAutoCleanupButton: "Run cleanup now",
+  savedArchiveFolderLabel: "Saved folder",
   statusArchiving: "Archiving...",
+  statusArchiveSettingsSaved: "Archive folder mode saved.",
   statusFailed: "Backup failed.",
+  statusMergeComplete: "Merged $1 folders and moved $2 pages.",
+  statusMergeNothing: "No dated archive folders to merge.",
+  statusMergingArchiveFolders: "Merging archive folders...",
   statusManualCleanupNoMatch: "No tabs matched the selected cleanup range.",
+  statusNoSavedFolder: "No saved archive folder selected.",
   statusNoWindow: "Could not find the current window.",
   statusNothingToBackup: "There are no pages to back up in this window.",
+  statusOpenFolderComplete: "Opened $1 pages from the saved folder.",
+  statusOpeningArchiveFolder: "Opening saved folder...",
   statusReady: "Choose an action.",
   statusSaved: "Saved $1 pages.",
   statusSavedAndClosed: "Saved $1 pages and closed $2 tabs.",
@@ -71,6 +89,8 @@ const FALLBACK_MESSAGES = {
 };
 
 const elements = {};
+let archiveFolders = [];
+let isBusy = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
   cacheElements();
@@ -78,11 +98,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindEvents();
 
   await renderLastBackup();
+  await loadArchiveState();
   await loadManualCleanupScope();
   await loadAutoCleanupState();
 });
 
 function cacheElements() {
+  elements.archiveFolderMode = document.getElementById("archiveFolderMode");
+  elements.archiveFolderSummary = document.getElementById("archiveFolderSummary");
   elements.autoCleanupEnabled = document.getElementById("autoCleanupEnabled");
   elements.autoCleanupInterval = document.getElementById("autoCleanupInterval");
   elements.autoCleanupThreshold = document.getElementById("autoCleanupThreshold");
@@ -92,14 +115,20 @@ function cacheElements() {
   elements.lastAutoCleanupTime = document.getElementById("lastAutoCleanupTime");
   elements.lastBackupTime = document.getElementById("lastBackupTime");
   elements.manualCleanupScope = document.getElementById("manualCleanupScope");
+  elements.mergeArchiveFoldersButton = document.getElementById("mergeArchiveFoldersButton");
+  elements.openArchiveFolderButton = document.getElementById("openArchiveFolderButton");
   elements.runAutoCleanupButton = document.getElementById("runAutoCleanupButton");
+  elements.savedArchiveFolder = document.getElementById("savedArchiveFolder");
   elements.status = document.getElementById("status");
 }
 
 function bindEvents() {
+  elements.archiveFolderMode.addEventListener("change", saveArchiveSettings);
   elements.backupOnlyButton.addEventListener("click", () => runBackup(false));
   elements.backupCloseButton.addEventListener("click", () => runBackup(true));
   elements.manualCleanupScope.addEventListener("change", saveManualCleanupScope);
+  elements.mergeArchiveFoldersButton.addEventListener("click", mergeArchiveFolders);
+  elements.openArchiveFolderButton.addEventListener("click", openSavedArchiveFolder);
   elements.autoCleanupEnabled.addEventListener("change", saveAutoCleanupSettings);
   elements.autoCleanupThreshold.addEventListener("change", saveAutoCleanupSettings);
   elements.autoCleanupInterval.addEventListener("change", saveAutoCleanupSettings);
@@ -119,6 +148,74 @@ async function renderLastBackup(timestamp) {
   const lastBackupAt = timestamp ?? (await getStorage(STORAGE_KEYS.lastBackupAt))[STORAGE_KEYS.lastBackupAt];
 
   renderTimestamp(elements.lastBackupTime, lastBackupAt);
+}
+
+async function loadArchiveState() {
+  try {
+    const response = await sendMessage({ type: "get-archive-state" });
+    if (!response?.ok) {
+      throw new Error(response?.error || t("statusFailed"));
+    }
+
+    renderArchiveState(response.state);
+  } catch (error) {
+    archiveFolders = [];
+    renderArchiveFolderOptions();
+    setStatus(error?.message || t("statusFailed"), "error");
+  }
+}
+
+function renderArchiveState(state) {
+  const settings = normalizeArchiveSettings(state?.settings);
+  archiveFolders = Array.isArray(state?.folders) ? state.folders : [];
+
+  elements.archiveFolderMode.value = settings.folderMode;
+  renderArchiveFolderOptions();
+}
+
+function renderArchiveFolderOptions() {
+  const selectedFolderId = elements.savedArchiveFolder.value;
+  elements.savedArchiveFolder.textContent = "";
+
+  if (archiveFolders.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = t("noSavedFoldersOption");
+    elements.savedArchiveFolder.append(option);
+  } else {
+    archiveFolders.forEach((folder) => {
+      const option = document.createElement("option");
+      option.value = folder.id;
+      option.textContent = formatArchiveFolderOption(folder);
+      elements.savedArchiveFolder.append(option);
+    });
+
+    if (archiveFolders.some((folder) => folder.id === selectedFolderId)) {
+      elements.savedArchiveFolder.value = selectedFolderId;
+    }
+  }
+
+  const urlCount = archiveFolders.reduce((count, folder) => count + (folder.urlCount || 0), 0);
+  elements.archiveFolderSummary.textContent = t("archiveFolderSummary", [
+    String(archiveFolders.length),
+    String(urlCount)
+  ]);
+  renderArchiveFolderControls();
+}
+
+function renderArchiveFolderControls() {
+  const hasFolders = archiveFolders.length > 0;
+  const hasDatedFolders = archiveFolders.some((folder) => folder.isDated);
+
+  elements.archiveFolderMode.disabled = isBusy;
+  elements.savedArchiveFolder.disabled = isBusy || !hasFolders;
+  elements.openArchiveFolderButton.disabled = isBusy || !hasFolders;
+  elements.mergeArchiveFoldersButton.disabled = isBusy || !hasDatedFolders;
+}
+
+function formatArchiveFolderOption(folder) {
+  const datedPrefix = folder.isDated ? "* " : "";
+  return `${datedPrefix}${folder.title} (${folder.urlCount || 0})`;
 }
 
 async function loadAutoCleanupState() {
@@ -158,7 +255,78 @@ async function runBackup(closeOriginalTabs) {
 
     const result = response.result;
     await renderLastBackup(result.lastBackupAt);
+    await loadArchiveState();
     setStatus(getSuccessStatus(result), "success");
+  } catch (error) {
+    setStatus(error?.message || t("statusFailed"), "error");
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function saveArchiveSettings() {
+  const settings = readArchiveSettings();
+  setStatus(t("statusArchiveSettingsSaved"));
+
+  try {
+    const response = await sendMessage({
+      settings,
+      type: "update-archive-settings"
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || t("statusFailed"));
+    }
+
+    renderArchiveState(response.state);
+    setStatus(t("statusArchiveSettingsSaved"), "success");
+  } catch (error) {
+    setStatus(error?.message || t("statusFailed"), "error");
+  }
+}
+
+async function mergeArchiveFolders() {
+  setBusy(true);
+  setStatus(t("statusMergingArchiveFolders"));
+
+  try {
+    const response = await sendMessage({ type: "merge-archive-folders" });
+    if (!response?.ok) {
+      throw new Error(response?.error || t("statusFailed"));
+    }
+
+    await loadArchiveState();
+    setStatus(getMergeStatus(response.result), "success");
+  } catch (error) {
+    setStatus(error?.message || t("statusFailed"), "error");
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function openSavedArchiveFolder() {
+  const folderId = elements.savedArchiveFolder.value;
+  if (!folderId) {
+    setStatus(t("statusNoSavedFolder"), "error");
+    return;
+  }
+
+  setBusy(true);
+  setStatus(t("statusOpeningArchiveFolder"));
+
+  try {
+    const windowId = await getCurrentWindowId();
+    const response = await sendMessage({
+      folderId,
+      type: "open-archive-folder",
+      windowId
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || t("statusFailed"));
+    }
+
+    setStatus(getOpenFolderStatus(response.result), "success");
   } catch (error) {
     setStatus(error?.message || t("statusFailed"), "error");
   } finally {
@@ -227,6 +395,7 @@ async function runAutoCleanupNow() {
       lastAutoCleanupResult: result,
       settings: readAutoCleanupSettings()
     });
+    await loadArchiveState();
     setStatus(getAutoCleanupStatus(result), result.savedCount > 0 ? "success" : "");
   } catch (error) {
     setStatus(error?.message || t("statusFailed"), "error");
@@ -348,6 +517,19 @@ function normalizeManualCleanupScope(scope) {
   return ALLOWED_MANUAL_CLEANUP_SCOPES.has(normalized) ? normalized : "all";
 }
 
+function readArchiveSettings() {
+  return normalizeArchiveSettings({
+    folderMode: elements.archiveFolderMode.value
+  });
+}
+
+function normalizeArchiveSettings(settings) {
+  const folderMode = String(settings?.folderMode || "dated");
+  return {
+    folderMode: ARCHIVE_FOLDER_MODES.has(folderMode) ? folderMode : "dated"
+  };
+}
+
 function readAutoCleanupSettings() {
   return normalizeAutoCleanupSettings({
     enabled: elements.autoCleanupEnabled.checked,
@@ -424,11 +606,28 @@ function getAutoCleanupStatus(result) {
   return t("autoCleanupNoBookmarkableStatus", String(result.staleCount || 0));
 }
 
-function setBusy(isBusy) {
+function getMergeStatus(result) {
+  if (!result?.mergedFolderCount) {
+    return t("statusMergeNothing");
+  }
+
+  return t("statusMergeComplete", [
+    String(result.mergedFolderCount || 0),
+    String(result.movedUrlCount || 0)
+  ]);
+}
+
+function getOpenFolderStatus(result) {
+  return t("statusOpenFolderComplete", String(result?.openedCount || 0));
+}
+
+function setBusy(nextBusy) {
+  isBusy = Boolean(nextBusy);
   elements.backupOnlyButton.disabled = isBusy;
   elements.backupCloseButton.disabled = isBusy;
   elements.manualCleanupScope.disabled = isBusy;
   elements.runAutoCleanupButton.disabled = isBusy;
+  renderArchiveFolderControls();
 }
 
 function setStatus(message, type = "") {

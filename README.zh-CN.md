@@ -11,18 +11,18 @@
 <p align="center">
   <a href="README.md">English</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.4.2.zip">下载 ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.5.0.zip">下载 ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.4.2-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.5.0-111827">
 </p>
 
 ## 功能简介
 
-窗口页面归档收藏是一个轻量 Chrome 扩展，用来整理拥挤的浏览器窗口。打开弹窗，选择备份模式，扩展会把当前窗口里的标签页保存到一个带时间戳的书签文件夹，并按网站域名自动分组。
+窗口页面归档收藏是一个轻量 Chrome 扩展，用来整理拥挤的浏览器窗口。打开弹窗，选择备份模式，扩展会把当前窗口里的标签页保存到结构清晰的书签文件夹，并按网站域名自动分组。
 
 它也可以定时清理长期未访问的标签页。开启后，扩展会按你选择的时间阈值归档过期标签页，并且只关闭已经成功收藏的标签页。
 
@@ -30,9 +30,11 @@
 
 - 备份当前 Chrome 窗口里的所有标签页。
 - 按网站域名分组，例如 `github.com`、`google.com`。
-- 每次备份都会创建一个新的带时间戳的顶层书签文件夹。
+- 每次备份可以创建新的带时间戳顶层书签文件夹，也可以复用一个固定归档文件夹。
 - 支持两种模式：只进行收藏备份，或备份并关闭标签页。
 - 手动备份并关闭可以选择关闭全部标签页，或只关闭 1 小时到 30 天未访问的标签页。
+- 支持把已有时间戳归档文件夹合并到固定归档文件夹。
+- 支持从保存的归档文件夹中读取并在当前窗口打开全部页面。
 - 弹窗中显示上一次成功备份时间。
 - 可选定时清理 1 小时到 30 天未访问的标签页。
 - 显示上一次自动清理时间和结果摘要。
@@ -42,7 +44,7 @@
 
 ## 本地安装
 
-1. 下载 [chrome-window-bookmark-archiver-1.4.2.zip](chrome-window-bookmark-archiver-1.4.2.zip)。
+1. 下载 [chrome-window-bookmark-archiver-1.5.0.zip](chrome-window-bookmark-archiver-1.5.0.zip)。
 2. 解压该文件。
 3. 打开 Chrome，进入 `chrome://extensions/`。
 4. 打开右上角的 **开发者模式**。
@@ -56,6 +58,14 @@
 点击扩展图标打开弹窗。
 
 选择 **只进行收藏备份**，会保存当前窗口标签页，并保留所有标签页打开。
+
+将 **文件夹模式** 设为 **新建时间文件夹**，会保留原来的时间戳归档行为。
+
+将 **文件夹模式** 设为 **固定文件夹**，会持续写入同一个归档文件夹，同时保留网站子文件夹分类。
+
+使用 **合并时间组**，可以把已有时间戳归档文件夹移动到固定归档文件夹中。
+
+选择 **保存的文件夹** 后，使用 **打开文件夹**，会把该文件夹里的全部页面打开到当前窗口。
 
 先选择 **备份并关闭范围**，再选择 **备份并关闭标签页**。
 
@@ -94,7 +104,7 @@
 
 扩展只使用 Chrome 的标签页、书签、定时任务和扩展本地存储 API，不会把浏览数据发送到任何外部服务。
 
-上一次成功备份时间、手动关闭范围、自动清理设置和最近一次自动清理结果会保存在 `chrome.storage.local` 中，用于之后在弹窗里显示。
+上一次成功备份时间、归档文件夹模式、手动关闭范围、自动清理设置和最近一次自动清理结果会保存在 `chrome.storage.local` 中，用于之后在弹窗里显示。
 
 ## 项目结构
 
@@ -102,7 +112,7 @@
 chrome-window-bookmark-archiver/
 +-- assets/              扩展 logo 和 Chrome 图标尺寸
 +-- _locales/            英文和中文 i18n 文案
-+-- chrome-window-bookmark-archiver-1.4.2.zip
++-- chrome-window-bookmark-archiver-1.5.0.zip
 |                       本地安装 ZIP 包
 +-- background.js        书签备份和关闭标签页逻辑
 +-- popup.html           扩展弹窗结构
@@ -124,6 +134,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.2.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.5.0.zip
 rm -rf "$staging"
 ```

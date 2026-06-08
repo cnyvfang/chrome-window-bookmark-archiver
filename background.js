@@ -1,8 +1,24 @@
 const AUTO_CLEANUP_ALARM_NAME = "auto-cleanup-stale-tabs";
 
 const ALLOWED_CLEANUP_THRESHOLDS = new Set([60, 360, 720, 1440, 4320, 10080, 43200]);
+const ARCHIVE_FOLDER_MODES = new Set(["dated", "single"]);
+const ARCHIVE_TIMESTAMP_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}\.\d{2}\.\d{2}$/;
 const TAB_CLOSE_BATCH_DELAY_MS = 30;
 const TAB_CLOSE_BATCH_SIZE = 25;
+const TAB_OPEN_DELAY_MS = 25;
+
+const ARCHIVE_PREFIX_DEFINITIONS = [
+  {
+    knownTitles: ["Window Bookmark Archive", "窗口页面归档"],
+    messageName: "topFolderPrefix",
+    type: "manual"
+  },
+  {
+    knownTitles: ["Automatic Tab Archive", "自动页面归档"],
+    messageName: "autoTopFolderPrefix",
+    type: "auto"
+  }
+];
 
 const DEFAULT_AUTO_CLEANUP_SETTINGS = {
   enabled: false,
@@ -30,6 +46,7 @@ const FALLBACK_MESSAGES = {
 };
 
 const STORAGE_KEYS = {
+  archiveSettings: "archiveSettings",
   autoCleanupSettings: "autoCleanupSettings",
   lastAutoCleanupAt: "lastAutoCleanupAt",
   lastAutoCleanupResult: "lastAutoCleanupResult",
@@ -66,6 +83,61 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }).catch((error) => {
       console.error(error);
       setActionFeedback(t("errorBadge"), "#b3261e", t("archiveFailedTitle"));
+      sendResponse({
+        ok: false,
+        error: error?.message || String(error)
+      });
+    });
+
+    return true;
+  }
+
+  if (message?.type === "get-archive-state") {
+    getArchiveState().then((state) => {
+      sendResponse({ ok: true, state });
+    }).catch((error) => {
+      sendResponse({
+        ok: false,
+        error: error?.message || String(error)
+      });
+    });
+
+    return true;
+  }
+
+  if (message?.type === "update-archive-settings") {
+    updateArchiveSettings(message.settings).then((state) => {
+      sendResponse({ ok: true, state });
+    }).catch((error) => {
+      sendResponse({
+        ok: false,
+        error: error?.message || String(error)
+      });
+    });
+
+    return true;
+  }
+
+  if (message?.type === "merge-archive-folders") {
+    mergeArchiveFolders().then((result) => {
+      sendResponse({ ok: true, result });
+    }).catch((error) => {
+      sendResponse({
+        ok: false,
+        error: error?.message || String(error)
+      });
+    });
+
+    return true;
+  }
+
+  if (message?.type === "open-archive-folder") {
+    openArchiveFolder({
+      folderId: message.folderId,
+      windowId: message.windowId
+    }).then((result) => {
+      sendResponse({ ok: true, result });
+    }).catch((error) => {
       sendResponse({
         ok: false,
         error: error?.message || String(error)
@@ -132,7 +204,9 @@ async function archiveCurrentWindow(options = {}) {
   const tabsToArchive = closeOriginalTabs && closeThresholdMinutes !== null
     ? getStaleTabs(originalTabs, closeThresholdMinutes)
     : originalTabs;
+  const archiveSettings = await getArchiveSettings();
   const archiveResult = await archiveTabs(tabsToArchive, {
+    folderMode: archiveSettings.folderMode,
     recordLastBackup: true,
     topFolderPrefixMessageName: "topFolderPrefix"
   });
@@ -172,6 +246,7 @@ async function archiveCurrentWindow(options = {}) {
 
 async function archiveTabs(tabs, options = {}) {
   const {
+    folderMode = "dated",
     recordLastBackup = true,
     topFolderPrefixMessageName = "topFolderPrefix"
   } = options;
@@ -189,14 +264,19 @@ async function archiveTabs(tabs, options = {}) {
     };
   }
 
-  const parentId = await findBookmarksBarId();
-  const topFolderTitle = `${t(topFolderPrefixMessageName)} ${formatTimestamp(new Date())}`;
-  const topFolder = await createBookmark({
-    parentId,
-    title: topFolderTitle
+  const topFolder = await resolveTopArchiveFolder({
+    folderMode,
+    topFolderPrefixMessageName
   });
 
   const foldersBySite = new Map();
+  const topFolderChildren = await getBookmarkChildren(topFolder.id);
+  topFolderChildren.forEach((node) => {
+    if (!node.url) {
+      foldersBySite.set(node.title, node.id);
+    }
+  });
+
   const savedTabIds = [];
   const skipped = [];
   let savedCount = 0;
@@ -240,7 +320,204 @@ async function archiveTabs(tabs, options = {}) {
     savedTabIds,
     skippedCount: skipped.length,
     topFolderId: topFolder.id,
-    topFolderTitle
+    topFolderTitle: topFolder.title
+  };
+}
+
+async function resolveTopArchiveFolder(options) {
+  const { folderMode, topFolderPrefixMessageName } = options;
+  const parentId = await findBookmarksBarId();
+  const title = t(topFolderPrefixMessageName);
+
+  if (folderMode === "single") {
+    return findOrCreateArchiveSingleFolder(parentId, topFolderPrefixMessageName);
+  }
+
+  return createBookmark({
+    parentId,
+    title: `${title} ${formatTimestamp(new Date())}`
+  });
+}
+
+async function getArchiveState() {
+  const [settings, folders] = await Promise.all([
+    getArchiveSettings(),
+    listArchiveFolders()
+  ]);
+
+  return { folders, settings };
+}
+
+async function getArchiveSettings() {
+  const values = await getStorage(STORAGE_KEYS.archiveSettings);
+  return normalizeArchiveSettings(values[STORAGE_KEYS.archiveSettings]);
+}
+
+async function updateArchiveSettings(settings) {
+  const normalized = normalizeArchiveSettings(settings);
+  await setStorage({ [STORAGE_KEYS.archiveSettings]: normalized });
+  return getArchiveState();
+}
+
+function normalizeArchiveSettings(settings) {
+  const folderMode = String(settings?.folderMode || "dated");
+  return {
+    folderMode: ARCHIVE_FOLDER_MODES.has(folderMode) ? folderMode : "dated"
+  };
+}
+
+async function listArchiveFolders() {
+  const [root] = await getBookmarkTree();
+  const bookmarksBar = findBookmarksBarNode(root);
+  const children = bookmarksBar?.children || [];
+  const folders = children
+    .filter((node) => !node.url)
+    .map((node) => {
+      const info = getArchiveFolderInfo(node.title);
+      if (!info) {
+        return null;
+      }
+
+      return {
+        archiveType: info.type,
+        id: node.id,
+        isDated: info.isDated,
+        title: node.title,
+        urlCount: countBookmarkUrls(node)
+      };
+    })
+    .filter(Boolean);
+
+  return folders.sort((a, b) => {
+    if (a.isDated !== b.isDated) {
+      return a.isDated ? 1 : -1;
+    }
+
+    if (a.archiveType !== b.archiveType) {
+      return a.archiveType.localeCompare(b.archiveType);
+    }
+
+    return b.title.localeCompare(a.title);
+  });
+}
+
+async function mergeArchiveFolders() {
+  const [root] = await getBookmarkTree();
+  const bookmarksBar = findBookmarksBarNode(root);
+  const children = bookmarksBar?.children || [];
+  const datedFolders = children
+    .filter((node) => !node.url)
+    .map((node) => ({ info: getArchiveFolderInfo(node.title), node }))
+    .filter((entry) => entry.info?.isDated);
+
+  const result = {
+    mergedFolderCount: 0,
+    movedUrlCount: 0,
+    targetFolderCount: 0
+  };
+
+  for (const definition of ARCHIVE_PREFIX_DEFINITIONS) {
+    const foldersForType = datedFolders
+      .filter((entry) => entry.info.type === definition.type)
+      .map((entry) => entry.node);
+
+    if (foldersForType.length === 0) {
+      continue;
+    }
+
+    const parentId = await findBookmarksBarId();
+    const targetFolder = await findOrCreateArchiveSingleFolder(parentId, definition.messageName);
+    result.targetFolderCount += 1;
+
+    for (const folder of foldersForType) {
+      const [freshFolder] = await getBookmarkSubTree(folder.id);
+      if (!freshFolder) {
+        continue;
+      }
+
+      result.movedUrlCount += await mergeArchiveFolderIntoTarget(freshFolder, targetFolder.id);
+      await removeBookmarkTree(folder.id);
+      result.mergedFolderCount += 1;
+    }
+  }
+
+  return result;
+}
+
+async function mergeArchiveFolderIntoTarget(sourceFolder, targetFolderId) {
+  let movedUrlCount = 0;
+
+  for (const child of sourceFolder.children || []) {
+    if (child.url) {
+      await moveBookmark(child.id, { parentId: targetFolderId });
+      movedUrlCount += 1;
+      continue;
+    }
+
+    const targetChildFolder = await findOrCreateChildFolder(targetFolderId, child.title || t("otherFolder"));
+    movedUrlCount += await moveChildrenIntoFolder(child, targetChildFolder.id);
+    await removeBookmarkTree(child.id);
+  }
+
+  return movedUrlCount;
+}
+
+async function moveChildrenIntoFolder(sourceFolder, targetFolderId) {
+  let movedUrlCount = 0;
+
+  for (const child of sourceFolder.children || []) {
+    if (child.url) {
+      await moveBookmark(child.id, { parentId: targetFolderId });
+      movedUrlCount += 1;
+      continue;
+    }
+
+    const nestedTargetFolder = await findOrCreateChildFolder(targetFolderId, child.title || t("otherFolder"));
+    movedUrlCount += await moveChildrenIntoFolder(child, nestedTargetFolder.id);
+    await removeBookmarkTree(child.id);
+  }
+
+  return movedUrlCount;
+}
+
+async function openArchiveFolder(options = {}) {
+  const { folderId, windowId } = options;
+  if (!folderId) {
+    throw new Error("Missing archive folder id.");
+  }
+
+  const [folder] = await getBookmarkSubTree(String(folderId));
+  if (!folder) {
+    throw new Error("Archive folder was not found.");
+  }
+
+  const urls = collectBookmarkUrls(folder);
+  let openedCount = 0;
+  let skippedCount = 0;
+
+  for (const url of urls) {
+    try {
+      await createTab({
+        active: false,
+        ...(Number.isInteger(windowId) ? { windowId } : {}),
+        url
+      });
+      openedCount += 1;
+    } catch (error) {
+      console.warn(error);
+      skippedCount += 1;
+    }
+
+    if (openedCount + skippedCount < urls.length) {
+      await delay(TAB_OPEN_DELAY_MS);
+    }
+  }
+
+  return {
+    folderId: folder.id,
+    openedCount,
+    skippedCount,
+    totalCount: urls.length
   };
 }
 
@@ -261,7 +538,9 @@ async function runAutoCleanup(options = {}) {
 
   const allTabs = await queryTabs({ windowType: "normal" });
   const staleTabs = getStaleTabs(allTabs, settings.thresholdMinutes);
+  const archiveSettings = await getArchiveSettings();
   const archiveResult = await archiveTabs(staleTabs, {
+    folderMode: archiveSettings.folderMode,
     recordLastBackup: true,
     topFolderPrefixMessageName: "autoTopFolderPrefix"
   });
@@ -498,6 +777,32 @@ function getBookmarkTree() {
   });
 }
 
+function getBookmarkSubTree(id) {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.getSubTree(id, (tree) => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve(tree);
+    });
+  });
+}
+
+function getBookmarkChildren(id) {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.getChildren(id, (children) => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve(children);
+    });
+  });
+}
+
 function getStorage(keys) {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get(keys, (values) => {
@@ -550,6 +855,32 @@ function clearAlarm(name) {
   });
 }
 
+function moveBookmark(id, destination) {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.move(id, destination, (node) => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve(node);
+    });
+  });
+}
+
+function removeBookmarkTree(id) {
+  return new Promise((resolve, reject) => {
+    chrome.bookmarks.removeTree(id, () => {
+      const error = chrome.runtime.lastError;
+      if (error) {
+        reject(new Error(error.message));
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
 async function openNewTabAndCloseTabs(originalTabs) {
   const tabIds = originalTabs
     .map((tab) => tab.id)
@@ -581,13 +912,96 @@ async function openNewTabAndCloseTabs(originalTabs) {
 
 async function findBookmarksBarId() {
   const [root] = await getBookmarkTree();
+  const bookmarksBar = findBookmarksBarNode(root);
+
+  return bookmarksBar?.id || root.children?.[0]?.id || root.id;
+}
+
+function findBookmarksBarNode(root) {
   const children = root.children || [];
-  const bookmarksBar = children.find((node) => {
+  return children.find((node) => {
     const title = node.title.toLowerCase();
     return title.includes("bookmarks bar") || title.includes("书签栏") || title.includes("收藏夹栏");
-  });
+  }) || children[0] || root;
+}
 
-  return bookmarksBar?.id || children[0]?.id || root.id;
+async function findOrCreateChildFolder(parentId, title) {
+  const children = await getBookmarkChildren(parentId);
+  const existingFolder = children.find((node) => !node.url && node.title === title);
+
+  if (existingFolder) {
+    return existingFolder;
+  }
+
+  return createBookmark({ parentId, title });
+}
+
+async function findOrCreateArchiveSingleFolder(parentId, messageName) {
+  const definition = ARCHIVE_PREFIX_DEFINITIONS.find((item) => item.messageName === messageName);
+  const children = await getBookmarkChildren(parentId);
+
+  if (definition) {
+    const existingFolder = children.find((node) => {
+      const info = !node.url ? getArchiveFolderInfo(node.title) : null;
+      return info && !info.isDated && info.type === definition.type;
+    });
+
+    if (existingFolder) {
+      return existingFolder;
+    }
+  }
+
+  return createBookmark({
+    parentId,
+    title: t(messageName)
+  });
+}
+
+function getArchiveFolderInfo(title) {
+  for (const definition of ARCHIVE_PREFIX_DEFINITIONS) {
+    for (const prefix of getArchivePrefixTitles(definition)) {
+      if (title === prefix) {
+        return {
+          isDated: false,
+          prefix,
+          type: definition.type
+        };
+      }
+
+      if (title.startsWith(`${prefix} `)) {
+        const suffix = title.slice(prefix.length + 1);
+        if (ARCHIVE_TIMESTAMP_PATTERN.test(suffix)) {
+          return {
+            isDated: true,
+            prefix,
+            type: definition.type
+          };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+function getArchivePrefixTitles(definition) {
+  return [...new Set([t(definition.messageName), ...definition.knownTitles])];
+}
+
+function countBookmarkUrls(node) {
+  if (node.url) {
+    return 1;
+  }
+
+  return (node.children || []).reduce((count, child) => count + countBookmarkUrls(child), 0);
+}
+
+function collectBookmarkUrls(node) {
+  if (node.url) {
+    return [node.url];
+  }
+
+  return (node.children || []).flatMap(collectBookmarkUrls);
 }
 
 function getBookmarkTitle(tab) {

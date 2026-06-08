@@ -21,6 +21,37 @@
         <strong id="lastBackupTime" data-i18n="lastBackupNever">Never</strong>
       </section>
 
+      <section class="settings-panel archive-panel">
+        <div class="settings-header">
+          <div>
+            <h2 data-i18n="archiveOptionsTitle">Archive folders</h2>
+            <p data-i18n="archiveOptionsSubtitle">Choose how bookmark folders are stored</p>
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <label class="field">
+            <span data-i18n="archiveFolderModeLabel">Folder mode</span>
+            <select id="archiveFolderMode">
+              <option value="dated" data-i18n="archiveFolderModeDated">New dated folder</option>
+              <option value="single" data-i18n="archiveFolderModeSingle">Single folder</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span data-i18n="savedArchiveFolderLabel">Saved folder</span>
+            <select id="savedArchiveFolder"></select>
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="mergeArchiveFoldersButton" class="secondary-button" type="button" data-i18n="mergeArchiveFoldersButton">Merge dated folders</button>
+          <button id="openArchiveFolderButton" class="secondary-button" type="button" data-i18n="openArchiveFolderButton">Open folder</button>
+        </div>
+
+        <p id="archiveFolderSummary" class="summary"></p>
+      </section>
+
       <section class="actions">
         <button id="backupOnlyButton" class="action-button primary" type="button">
           <span class="button-title" data-i18n="backupOnlyButton">Backup only</span>
