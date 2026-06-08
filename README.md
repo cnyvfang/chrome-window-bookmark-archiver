@@ -11,13 +11,13 @@
 <p align="center">
   <a href="README.zh-CN.md">简体中文</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.4.1.zip">Download ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.4.2.zip">Download ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.4.1-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.4.2-111827">
 </p>
 
 ## What It Does
@@ -42,7 +42,7 @@ It can also run scheduled cleanup for stale tabs. When enabled, it archives tabs
 
 ## Install Locally
 
-1. Download [chrome-window-bookmark-archiver-1.4.1.zip](chrome-window-bookmark-archiver-1.4.1.zip).
+1. Download [chrome-window-bookmark-archiver-1.4.2.zip](chrome-window-bookmark-archiver-1.4.2.zip).
 2. Unzip the file.
 3. Open Chrome and go to `chrome://extensions/`.
 4. Turn on **Developer mode**.
@@ -102,7 +102,7 @@ The last successful backup time, manual close range, automatic cleanup settings,
 chrome-window-bookmark-archiver/
 +-- assets/              Extension logo and Chrome icon sizes
 +-- _locales/            English and Chinese i18n messages
-+-- chrome-window-bookmark-archiver-1.4.1.zip
++-- chrome-window-bookmark-archiver-1.4.2.zip
 |                       Local install ZIP package
 +-- background.js        Bookmark backup and tab closing logic
 +-- popup.html           Extension popup markup
@@ -124,6 +124,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.1.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.2.zip
 rm -rf "$staging"
 ```

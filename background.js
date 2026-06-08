@@ -1,6 +1,8 @@
 const AUTO_CLEANUP_ALARM_NAME = "auto-cleanup-stale-tabs";
 
 const ALLOWED_CLEANUP_THRESHOLDS = new Set([60, 360, 720, 1440, 4320, 10080, 43200]);
+const TAB_CLOSE_BATCH_DELAY_MS = 30;
+const TAB_CLOSE_BATCH_SIZE = 25;
 
 const DEFAULT_AUTO_CLEANUP_SETTINGS = {
   enabled: false,
@@ -442,6 +444,33 @@ function removeTabs(tabIds) {
 }
 
 async function removeTabsSafely(tabIds) {
+  return closeTabsReliably(tabIds);
+}
+
+async function closeTabsReliably(tabIds) {
+  const uniqueTabIds = [...new Set(tabIds.filter(Number.isInteger))];
+  let closedCount = 0;
+
+  for (let index = 0; index < uniqueTabIds.length; index += TAB_CLOSE_BATCH_SIZE) {
+    const batch = uniqueTabIds.slice(index, index + TAB_CLOSE_BATCH_SIZE);
+
+    try {
+      await removeTabs(batch);
+      closedCount += batch.length;
+    } catch (error) {
+      console.warn(error);
+      closedCount += await closeTabsOneByOne(batch);
+    }
+
+    if (index + TAB_CLOSE_BATCH_SIZE < uniqueTabIds.length) {
+      await delay(TAB_CLOSE_BATCH_DELAY_MS);
+    }
+  }
+
+  return closedCount;
+}
+
+async function closeTabsOneByOne(tabIds) {
   let closedCount = 0;
 
   for (const tabId of tabIds) {
@@ -547,8 +576,7 @@ async function openNewTabAndCloseTabs(originalTabs) {
     return 0;
   }
 
-  await removeTabs(idsToClose);
-  return idsToClose.length;
+  return closeTabsReliably(idsToClose);
 }
 
 async function findBookmarksBarId() {
@@ -646,6 +674,12 @@ function sortTabs(tabs) {
       return (a.windowId || 0) - (b.windowId || 0);
     }
     return a.index - b.index;
+  });
+}
+
+function delay(milliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
   });
 }
 

@@ -11,13 +11,13 @@
 <p align="center">
   <a href="README.md">English</a>
   ·
-  <a href="chrome-window-bookmark-archiver-1.4.1.zip">下载 ZIP</a>
+  <a href="chrome-window-bookmark-archiver-1.4.2.zip">下载 ZIP</a>
 </p>
 
 <p align="center">
   <img alt="Manifest V3" src="https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4">
   <img alt="No build" src="https://img.shields.io/badge/build-none-10B981">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.4.1-111827">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.4.2-111827">
 </p>
 
 ## 功能简介
@@ -42,7 +42,7 @@
 
 ## 本地安装
 
-1. 下载 [chrome-window-bookmark-archiver-1.4.1.zip](chrome-window-bookmark-archiver-1.4.1.zip)。
+1. 下载 [chrome-window-bookmark-archiver-1.4.2.zip](chrome-window-bookmark-archiver-1.4.2.zip)。
 2. 解压该文件。
 3. 打开 Chrome，进入 `chrome://extensions/`。
 4. 打开右上角的 **开发者模式**。
@@ -102,7 +102,7 @@
 chrome-window-bookmark-archiver/
 +-- assets/              扩展 logo 和 Chrome 图标尺寸
 +-- _locales/            英文和中文 i18n 文案
-+-- chrome-window-bookmark-archiver-1.4.1.zip
++-- chrome-window-bookmark-archiver-1.4.2.zip
 |                       本地安装 ZIP 包
 +-- background.js        书签备份和关闭标签页逻辑
 +-- popup.html           扩展弹窗结构
@@ -124,6 +124,6 @@ find . -maxdepth 1 -type f -name "chrome-window-bookmark-archiver-*.zip" -delete
 staging=$(mktemp -d)
 mkdir -p "$staging/chrome-window-bookmark-archiver"
 rsync -a --exclude ".git" --exclude ".DS_Store" --exclude ".learnings" --exclude "*.zip" ./ "$staging/chrome-window-bookmark-archiver/"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.1.zip
+COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc "$staging/chrome-window-bookmark-archiver" chrome-window-bookmark-archiver-1.4.2.zip
 rm -rf "$staging"
 ```
